@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Pengelola;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class PengelolaController extends Controller
+{
+    /**
+     * Menampilkan daftar pengelola.
+     */
+    public function index()
+    {
+        $pengelolas = Pengelola::latest()->paginate(5);
+        return view('pengelolas.index', compact('pengelolas'))
+            ->with('i', (request()->input('page', 1) - 1) * 5);
+    }
+
+    /**
+     * Menampilkan form untuk membuat pengelola baru.
+     */
+    public function create()
+    {
+        return view('pengelolas.create');
+    }
+
+    /**
+     * Menyimpan data pengelola baru ke database.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'no_telp_pengelola' => 'required|string|max:15',
+            'alamat' => 'required|string|max:255',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'deskripsi' => 'nullable|string',
+        ]);
+
+        $data = $request->all();
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('pengelola_fotos', 'public');
+        }
+
+        $data['created_by'] = Auth::id();
+        $data['updated_by'] = Auth::id();
+
+        Pengelola::create($data);
+
+        return redirect()->route('pengelolas.index')
+            ->with('success', 'Pengelola berhasil ditambahkan.');
+    }
+
+    /**
+     * Menampilkan detail pengelola tertentu.
+     */
+    public function show(Pengelola $pengelola)
+    {
+        return view('pengelolas.show', compact('pengelola'));
+    }
+
+    /**
+     * Menampilkan form edit pengelola.
+     */
+    public function edit(Pengelola $pengelola)
+    {
+        return view('pengelolas.edit', compact('pengelola'));
+    }
+
+    /**
+     * Memperbarui data pengelola.
+     */
+    public function update(Request $request, Pengelola $pengelola)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'no_telp_pengelola' => 'required|string|max:15',
+            'alamat' => 'required|string|max:255',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'deskripsi' => 'nullable|string',
+        ]);
+
+        $data = $request->all();
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('pengelola_fotos', 'public');
+        }
+
+        $data['updated_by'] = Auth::id();
+        $pengelola->update($data);
+
+        return redirect()->route('pengelolas.index')
+            ->with('success', 'Pengelola berhasil diperbarui.');
+    }
+
+    /**
+     * Menghapus (soft delete) pengelola.
+     */
+    public function destroy(Pengelola $pengelola)
+    {
+        $pengelola->update(['deleted_by' => Auth::id()]);
+        $pengelola->delete();
+
+        return redirect()->route('pengelolas.index')
+            ->with('success', 'Pengelola berhasil dihapus.');
+    }
+
+    /**
+     * Mengembalikan data yang telah dihapus (restore).
+     */
+    public function restore($id)
+    {
+        $pengelola = Pengelola::onlyTrashed()->findOrFail($id);
+        $pengelola->restore();
+
+        return redirect()->route('pengelolas.index')
+            ->with('success', 'Pengelola berhasil dikembalikan.');
+    }
+
+    /**
+     * Menghapus data secara permanen.
+     */
+    public function forceDelete($id)
+    {
+        $pengelola = Pengelola::onlyTrashed()->findOrFail($id);
+        $pengelola->forceDelete();
+
+        return redirect()->route('pengelolas.index')
+            ->with('success', 'Pengelola berhasil dihapus permanen.');
+    }
+}
