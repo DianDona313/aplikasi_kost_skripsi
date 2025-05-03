@@ -9,6 +9,13 @@ use Yajra\DataTables\DataTables;
 class JenisKostController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('permission:jeniskost-list|jeniskost-create|jeniskost-edit|jeniskost-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:jeniskost-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:jeniskost-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:jeniskost-delete', ['only' => ['destroy']]);
+    }
     public function index(Request $request)
     {
         if ($request->ajax()) {

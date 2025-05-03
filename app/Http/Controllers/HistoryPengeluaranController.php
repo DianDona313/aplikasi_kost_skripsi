@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\Storage;
 
 class HistoryPengeluaranController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:history_pengeluarans-list|history_pengeluarans-create|history_pengeluarans-edit|history_pengeluarans-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:history_pengeluarans-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:history_pengeluarans-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:history_pengeluarans-delete', ['only' => ['destroy']]);
+
+    }
+
     public function index()
     {
         $historyPengeluaran = HistoryPengeluaran::latest()->paginate(5);
@@ -21,7 +31,7 @@ class HistoryPengeluaranController extends Controller
     {
         $properties = Properties::all();
         $kategori_pengeluarans = Kategori_Pengeluaran::all();
-        return view('history_pengeluarans.create', compact('properties','kategori_pengeluarans' )) ;
+        return view('history_pengeluarans.create', compact('properties', 'kategori_pengeluarans'));
     }
 
     public function store(Request $request)
@@ -58,7 +68,7 @@ class HistoryPengeluaranController extends Controller
     {
         $properties = Properties::all();
         $kategori_pengeluarans = Kategori_Pengeluaran::all();
-        return view('history_pengeluarans.edit', compact('historyPengeluaran','properties','kategori_pengeluarans'));
+        return view('history_pengeluarans.edit', compact('historyPengeluaran', 'properties', 'kategori_pengeluarans'));
     }
 
     public function update(Request $request, HistoryPengeluaran $historyPengeluaran)

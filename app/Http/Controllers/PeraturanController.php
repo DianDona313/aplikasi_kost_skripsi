@@ -7,11 +7,21 @@ use Illuminate\Http\Request;
 
 class PeraturanController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:peraturan-list|peraturan-create|peraturan-edit|peraturan-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:peraturan-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:peraturan-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:peraturan-delete', ['only' => ['destroy']]);
+    }
+
+
     public function index()
     {
         $peraturans = Peraturans::latest()->paginate(10);
         return view('peraturans.index', compact('peraturans'))
-        ->with('i', (request()->input('page', 1) - 1) * 5);
+            ->with('i', (request()->input('page', 1) - 1) * 5);
     }
 
     public function create()

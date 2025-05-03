@@ -12,9 +12,16 @@ use PhpParser\Builder\Property;
 
 class RoomController extends Controller
 {
-    /**
-     * Menampilkan daftar kamar.
-     */
+
+
+
+    public function __construct()
+    {
+        $this->middleware('permission:room-list|room-create|room-edit|room-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:room-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:room-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:room-delete', ['only' => ['destroy']]);
+    }
     public function index()
     {
         $rooms = Room::select('*')

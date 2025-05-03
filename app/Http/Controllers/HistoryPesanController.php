@@ -8,6 +8,13 @@ use Illuminate\Http\Request;
 
 class HistoryPesanController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:history_pesans-list|history_pesans-create|history_pesans-edit|history_pesans-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:history_pesans-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:history_pesans-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:history_pesans-delete', ['only' => ['destroy']]);
+    }
     public function index()
     {
         $historyPesans = HistoryPesan::latest()->paginate(10);

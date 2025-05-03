@@ -14,9 +14,11 @@ use App\Http\Controllers\PengelolaPropertiController;
 use App\Http\Controllers\PenyewaController;
 use App\Http\Controllers\PeraturanController;
 use App\Http\Controllers\PropertiController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,19 +26,19 @@ Route::get('/', function () {
 });
 
 Route::resource('bookings', BookingController::class);
+Route::resource('fasilitas', FasilitasController::class);
 Route::resource('history_pengeluarans', HistoryPengeluaranController::class);
 Route::resource('history_pesans', HistoryPesanController::class);
 Route::resource('jeniskosts', JenisKostController::class);
 Route::resource('kategori_pengeluarans', KategoriPengeluaranController::class);
+Route::resource('metode_pembayarans', MetodePembayaranController::class);
 Route::resource('payments', PaymentController::class);
 Route::resource('pengelolas', PengelolaController::class);
 Route::resource('pengelola_properties', PengelolaPropertiController::class);
 Route::resource('penyewas', PenyewaController::class);
+Route::resource('peraturans', PeraturanController::class);
 Route::resource('properties', PropertiController::class);
 Route::resource('rooms', RoomController::class);
-Route::resource('fasilitas', FasilitasController::class);
-Route::resource('peraturans', PeraturanController::class);
-Route::resource('metode_pembayarans', MetodePembayaranController::class);
 Route::resource('User', UserController::class);
 Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::post('post-login', [AuthController::class, 'postLogin'])->name('login.post');
@@ -44,3 +46,11 @@ Route::get('registration', [AuthController::class, 'registration'])->name('regis
 Route::post('post-registration', [AuthController::class, 'postRegistration'])->name('register.post');
 Route::get('dashboard', [AuthController::class, 'dashboard']);
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::group(['middleware' => ['auth']], function() {
+    Route::resource('roles', RoleController::class);
+    Route::resource('users', UserController::class);
+});

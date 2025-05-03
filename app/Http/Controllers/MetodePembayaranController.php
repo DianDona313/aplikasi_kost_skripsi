@@ -10,14 +10,21 @@ use Illuminate\Support\Facades\Auth;
 
 class MetodePembayaranController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    public function __construct()
+    {
+        $this->middleware('permission:metode_pembayaran-list|metode_pembayaran-create|metode_pembayaran-edit|metode_pembayaran-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:metode_pembayaran-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:metode_pembayaran-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:metode_pembayaran-delete', ['only' => ['destroy']]);
+
+    }
+
     public function index()
     {
         $metode_pembayarans = Metode_Pembayaran::all();
         return view('metode_pembayarans.index', compact('metode_pembayarans'))
-        ->with('i', (request()->input('page', 1) - 1) * 5);
+            ->with('i', (request()->input('page', 1) - 1) * 5);
     }
 
     /**
@@ -26,7 +33,7 @@ class MetodePembayaranController extends Controller
     public function create()
     {
         $properties = Properties::all();
-        return view('metode_pembayarans.create',compact('properties'));
+        return view('metode_pembayarans.create', compact('properties'));
     }
 
     /**

@@ -9,6 +9,15 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:payment-list|payment-create|payment-edit|payment-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:payment-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:payment-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:payment-delete', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $payments = Payment::latest()->paginate(10);

@@ -263,4 +263,5 @@
     <script src="/assets/js/argon-dashboard.min.js?v=2.1.0"></script>
     @stack('scripts')
 </body>
+
 </html>

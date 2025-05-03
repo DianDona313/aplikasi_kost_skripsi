@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 
 class KategoriPengeluaranController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:kategori_pengeluarans-list|kategori_pengeluarans-create|kategori_pengeluarans-edit|kategori_pengeluarans-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:kategori_pengeluarans-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:kategori_pengeluarans-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:kategori_pengeluarans-delete', ['only' => ['destroy']]);
+
+    }
     public function index()
     {
         // Mengambil daftar kategori dengan pagination

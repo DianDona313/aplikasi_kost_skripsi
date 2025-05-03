@@ -8,9 +8,16 @@ use Illuminate\Http\Request;
 
 class PenyewaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+
+    public function __construct()
+    {
+        $this->middleware('permission:penyewa-list|penyewa-create|penyewa-edit|penyewa-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:penyewa-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:penyewa-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:penyewa-delete', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $penyewas = Penyewa::latest()->paginate(5);
@@ -33,10 +40,10 @@ class PenyewaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:penyewas,email',
-            'nohp'          => 'required|string|max:15',
-            'alamat'        => 'required|string',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:penyewas,email',
+            'nohp' => 'required|string|max:15',
+            'alamat' => 'required|string',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             // 'created_by'    => 'required|integer',
         ]);
@@ -72,10 +79,10 @@ class PenyewaController extends Controller
     public function update(Request $request, Penyewa $penyewa)
     {
         $request->validate([
-            'nama'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:penyewas,email,' . $penyewa->id,
-            'nohp'          => 'required|string|max:15',
-            'alamat'        => 'required|string',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:penyewas,email,' . $penyewa->id,
+            'nohp' => 'required|string|max:15',
+            'alamat' => 'required|string',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             // 'updated_by'    => 'required|integer',
         ]);

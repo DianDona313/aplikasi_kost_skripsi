@@ -8,9 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class PengelolaController extends Controller
 {
-    /**
-     * Menampilkan daftar pengelola.
-     */
+
+    public function __construct()
+    {
+        $this->middleware('permission:pengelola-list|pengelola-create|pengelola-edit|pengelola-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:pengelola-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:pengelola-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:pengelola-delete', ['only' => ['destroy']]);
+    }
+
+
     public function index()
     {
         $pengelolas = Pengelola::latest()->paginate(5);

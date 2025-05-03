@@ -14,9 +14,15 @@ use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    /**
-     * Menampilkan daftar pemesanan.
-     */
+
+    public function __construct()
+    {
+        $this->middleware('permission:booking-list|booking-create|booking-edit|booking-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:booking-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:booking-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:booking-delete', ['only' => ['destroy']]);
+    }
+
     public function index()
     {
         $bookings = Booking::latest()->paginate(5);
