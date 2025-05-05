@@ -5,17 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\JenisKost;
 use App\Models\Properties;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class PropertiController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    public function __construct()
     {
-        $properties = Properties::latest()->paginate(5);
-        return view('properties.index', compact('properties'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+        $this->middleware('permission:properti-list|properti-create|properti-edit|properti-delete', ['only' => ['index', 'show']]);
+        $this->middleware('permission:properti-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:properti-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:properti-delete', ['only' => ['destroy']]);
+    }
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Properties::latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+                    $btn = '<a href="' . route('properties.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a>';
+                    $btn .= ' <form action="' . route('properties.destroy', $row->id) . '" method="POST" style="display:inline;">
+                            ' . csrf_field() . method_field("DELETE") . '
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                          </form>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('properties.index');
     }
 
     /**
@@ -24,7 +44,7 @@ class PropertiController extends Controller
     public function create()
     {
         $jenisKosts = JenisKost::all();
-        return view('properties.create',compact('jenisKosts'));
+        return view('properties.create', compact('jenisKosts'));
     }
 
     /**
@@ -33,12 +53,12 @@ class PropertiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama'       => 'required',
-            'alamat'     => 'required',
-            'kota'       => 'required',
+            'nama' => 'required',
+            'alamat' => 'required',
+            'kota' => 'required',
             'jeniskost_id' => 'required|exists:jeniskosts,id',
-            'foto'       => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'deskripsi'  => 'nullable|string',
+            'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'deskripsi' => 'nullable|string',
             // 'created_by' => 'required|integer',
         ]);
 
@@ -48,15 +68,15 @@ class PropertiController extends Controller
         }
 
         Properties::create([
-            'nama'        => $request->nama,
-            'alamat'      => $request->alamat,
-            'kota'        => $request->kota,
-            'jeniskost_id'=> $request->jeniskost_id,
-            'foto'        => $fotoPath ?? "image",
-            'deskripsi'   => $request->deskripsi,
-            'created_by'  => $request->created_by,
-            'updated_by'  => 1,
-            'deleted_by'  => 1,
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'kota' => $request->kota,
+            'jeniskost_id' => $request->jeniskost_id,
+            'foto' => $fotoPath ?? "image",
+            'deskripsi' => $request->deskripsi,
+            'created_by' => $request->created_by,
+            'updated_by' => 1,
+            'deleted_by' => 1,
         ]);
 
         return redirect()
@@ -70,7 +90,7 @@ class PropertiController extends Controller
     public function show(Properties $property)
     {
         $jenisKosts = JenisKost::all();
-        return view('properties.show', compact('property','jenisKosts'));
+        return view('properties.show', compact('property', 'jenisKosts'));
     }
 
     /**
@@ -79,7 +99,7 @@ class PropertiController extends Controller
     public function edit(Properties $property)
     {
         $jenisKosts = JenisKost::all();
-        return view('properties.edit',compact('property','jenisKosts'));
+        return view('properties.edit', compact('property', 'jenisKosts'));
     }
 
     /**
@@ -88,12 +108,12 @@ class PropertiController extends Controller
     public function update(Request $request, Properties $property)
     {
         $request->validate([
-            'nama'       => 'required',
-            'alamat'     => 'required',
-            'kota'       => 'required',
+            'nama' => 'required',
+            'alamat' => 'required',
+            'kota' => 'required',
             'jeniskost_id' => 'required|exists:jeniskosts,id',
-            'foto'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'deskripsi'  => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'deskripsi' => 'nullable|string',
             // 'updated_by' => 'required|integer',
         ]);
 
@@ -104,12 +124,12 @@ class PropertiController extends Controller
         }
 
         $property->update([
-            'nama'        => $request->nama,
-            'alamat'      => $request->alamat,
-            'kota'        => $request->kota,
-            'jeniskost_id'=> $request->jeniskost_id,
-            'deskripsi'   => $request->deskripsi,
-            'updated_by'  => $request->updated_by,
+            'nama' => $request->nama,
+            'alamat' => $request->alamat,
+            'kota' => $request->kota,
+            'jeniskost_id' => $request->jeniskost_id,
+            'deskripsi' => $request->deskripsi,
+            'updated_by' => $request->updated_by,
         ]);
 
         return redirect()->route('properties.index')

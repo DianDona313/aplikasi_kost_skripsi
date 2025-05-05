@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JenisKost;
 use App\Models\Penyewa;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class PenyewaController extends Controller
 {
@@ -18,11 +19,34 @@ class PenyewaController extends Controller
         $this->middleware('permission:penyewa-delete', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $penyewas = Penyewa::latest()->paginate(5);
-        return view('penyewas.index', compact('penyewas'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+        if ($request->ajax()) {
+            $data = Penyewa::latest()->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function ($row) {
+                    $btn = '<a href="' . route('penyewas.show', $row->id) . '" class="btn btn-info btn-sm">Lihat</a> ';
+
+                    if (auth()->user()->can('penyewa-edit')) {
+                        $btn .= '<a href="' . route('penyewas.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a> ';
+                    }
+
+                    if (auth()->user()->can('penyewa-delete')) {
+                        $btn .= '<form action="' . route('penyewas.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus?\')">';
+                        $btn .= csrf_field();
+                        $btn .= method_field('DELETE');
+                        $btn .= '<button type="submit" class="btn btn-danger btn-sm">Hapus</button>';
+                        $btn .= '</form>';
+                    }
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('penyewas.index');
     }
 
     /**

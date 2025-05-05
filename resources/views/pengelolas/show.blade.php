@@ -12,7 +12,9 @@
                 <p><strong>Deskripsi:</strong> {{ $pengelola->deskripsi }}</p>
                 <p><strong>Foto:</strong> <br> <img src="{{ asset('storage/' . $pengelola->foto) }}" width="150"></p>
 
-                <a href="{{ route('pengelolas.edit', $pengelola->id) }}" class="btn btn-warning">Edit</a>
+                @can('pengelola-edit')
+                    <a href="{{ route('pengelolas.edit', $pengelola->id) }}" class="btn btn-warning">Edit</a>
+                @endcan
                 <a href="{{ route('pengelolas.index') }}" class="btn btn-secondary">Kembali</a>
             </div>
         </div>

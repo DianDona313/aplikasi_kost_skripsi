@@ -3,9 +3,11 @@
 @section('content')
     <div class="container">
         <h2 class="mb-4" style="color: #FDE5AF;">Daftar Jenis Kost</h2>
+        @can('jeniskost-create')
         <a href="{{ route('jeniskosts.create') }}" class="btn btn-custom-orange mb-3">
             <i class="fas fa-plus me-1"></i> Tambah Jenis Kost
         </a>
+        @endcan
 
         @if (session('success'))
             <div class="alert alert-success">

@@ -3,7 +3,6 @@
 @section('content')
     <div class="container">
         <h2>Edit Booking</h2>
-
         <div class="card">
             <div class="card-body">
                 <form action="{{ route('bookings.update', $booking->id) }}" method="POST">

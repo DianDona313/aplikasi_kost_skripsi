@@ -1,4 +1,4 @@
-@extends('layouts.app2')
+@extends('layouts.app')
 
 @section('content')
     <div class="container">
@@ -10,13 +10,12 @@
                 <p>{{ $message }}</p>
             </div>
         @endif
-
         @can('role-create')
             <a class="btn btn-custom-orange mb-3" href="{{ route('roles.create') }}">
                 <i class="fa fa-plus me-1"></i> Create New Role
             </a>
         @endcan
-
+        
         <div class="card mt-4">
             <div class="card-body">
                 <table class="table table-bordered text-center">

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use PhpParser\Builder\Property;
+use Yajra\DataTables\DataTables;
 
 class RoomController extends Controller
 {
@@ -22,19 +23,47 @@ class RoomController extends Controller
         $this->middleware('permission:room-edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:room-delete', ['only' => ['destroy']]);
     }
-    public function index()
-    {
-        $rooms = Room::select('*')
-            ->whereIn('id', function ($query) {
-                $query->selectRaw('MIN(id)')
-                    ->from('rooms')
-                    ->groupBy('room_name');
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $subQuery = Room::selectRaw('MIN(id) as id')
+            ->groupBy('room_name');
+
+        $data = Room::whereIn('id', $subQuery)->latest()->get();
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('is_available', function ($row) {
+                return $row->is_available 
+                    ? '<span class="badge bg-success">Tersedia</span>' 
+                    : '<span class="badge bg-danger">Tidak Tersedia</span>';
             })
-            ->latest()
-            ->paginate(5);
-        return view('rooms.index', compact('rooms'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+            ->addColumn('harga', function ($row) {
+                return 'Rp ' . number_format($row->harga, 0, ',', '.');
+            })
+            ->addColumn('action', function ($row) {
+                $btn = '<a href="' . url('/rooms/' . urlencode($row->id)) . '" class="btn btn-info btn-sm">Detail</a>';
+
+                if (auth()->user()->can('room-edit')) {
+                    $btn .= ' <a href="' . route('rooms.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>';
+                }
+
+                if (auth()->user()->can('room-delete')) {
+                    $btn .= ' <form action="' . route('rooms.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus kamar ini?\')">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-danger btn-sm">Hapus</button>';
+                    $btn .= '</form>';
+                }
+
+                return $btn;
+            })
+            ->rawColumns(['action', 'is_available'])
+            ->make(true);
     }
+
+    return view('rooms.index');
+}
 
     /**
      * Menampilkan form untuk membuat kamar baru.
@@ -51,6 +80,7 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'properti_id' => 'required|exists:properties,id',
             'room_name' => 'required|string|max:255',

@@ -15,12 +15,16 @@
                     <p class="card-text">{{ $fasilita->deskripsi }}</p>
                 </div>
                 <a href="{{ route('fasilitas.index') }}" class="btn btn-secondary">Kembali</a>
+                @can('fasilitas-edit')
                 <a href="{{ route('fasilitas.edit', $fasilita->id) }}" class="btn btn-warning">Edit</a>
+                @endcan
+                @can('fasilitas-delete')
                 <form action="{{ route('fasilitas.destroy', $fasilita->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Hapus</button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>

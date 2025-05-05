@@ -19,7 +19,7 @@
 
     <div class="card mt-4">
         <div class="card-body">
-            <table class="table table-bordered text-center">
+            <table class="table table-bordered text-center" id="users-table">
                 <thead>
                     <tr>
                         <th>No</th>
@@ -29,46 +29,27 @@
                         <th width="280px">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach ($data as $key => $user)
-                        <tr>
-                            <td>{{ ++$i }}</td>
-                            <td>{{ $user->name }}</td>
-                            <td>{{ $user->email }}</td>
-                            <td>
-                                @if (!empty($user->getRoleNames()))
-                                    @foreach ($user->getRoleNames() as $v)
-                                        <span class="badge bg-success">{{ $v }}</span>
-                                    @endforeach
-                                @endif
-                            </td>
-                            <td>
-                                <a class="btn btn-info btn-sm" href="{{ route('users.show', $user->id) }}">
-                                    <i class="fa-solid fa-list me-1"></i> Lihat
-                                </a>
-                                @can('user-edit')
-                                    <a class="btn btn-primary btn-sm" href="{{ route('users.edit', $user->id) }}">
-                                        <i class="fa-solid fa-pen-to-square me-1"></i> Edit
-                                    </a>
-                                @endcan
-                                @can('user-delete')
-                                    <form method="POST" action="{{ route('users.destroy', $user->id) }}" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus user ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="fa-solid fa-trash me-1"></i> Hapus
-                                        </button>
-                                    </form>
-                                @endcan
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
             </table>
-
-            {{-- Pagination --}}
-            {!! $data->links('pagination::bootstrap-5') !!}
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(function () {
+        $('#users-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('users.index') }}",
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'name', name: 'name' },
+                { data: 'email', name: 'email' },
+                { data: 'roles', name: 'roles', orderable: false, searchable: false },
+                { data: 'action', name: 'action', orderable: false, searchable: false },
+            ]
+        });
+    });
+</script>
+@endpush

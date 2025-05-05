@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Hash as FacadesHash;
+use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
 {
@@ -30,13 +31,46 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request): View
-    {
-        $data = User::latest()->paginate(5);
-        $properties = Properties::all();
-        return view('users.index', compact('data', 'properties'))
-            ->with('i', ($request->input('page', 1) - 1) * 5);
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $data = User::with('roles')->latest()->get();
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('roles', function ($user) {
+                return $user->getRoleNames()->map(function($role){
+                    return '<span class="badge bg-success">' . $role . '</span>';
+                })->implode(' ');
+            })
+            ->addColumn('action', function ($row) {
+                $btn = '<a href="' . route('users.show', $row->id) . '" class="btn btn-info btn-sm me-1">
+                            <i class="fa-solid fa-list me-1"></i> Lihat
+                        </a>';
+
+                if (auth()->user()->can('user-edit')) {
+                    $btn .= '<a href="' . route('users.edit', $row->id) . '" class="btn btn-primary btn-sm me-1">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                            </a>';
+                }
+
+                if (auth()->user()->can('user-delete')) {
+                    $btn .= '<form method="POST" action="' . route('users.destroy', $row->id) . '" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus user ini?\')">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fa-solid fa-trash me-1"></i> Hapus
+                            </button>';
+                    $btn .= '</form>';
+                }
+
+                return $btn;
+            })
+            ->rawColumns(['roles', 'action'])
+            ->make(true);
     }
+
+    return view('users.index');
+}
 
     /**
      * Show the form for creating a new resource.

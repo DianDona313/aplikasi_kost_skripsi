@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pengelola;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\DataTables;
 
 class PengelolaController extends Controller
 {
@@ -18,12 +19,38 @@ class PengelolaController extends Controller
     }
 
 
-    public function index()
-    {
-        $pengelolas = Pengelola::latest()->paginate(5);
-        return view('pengelolas.index', compact('pengelolas'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $data = Pengelola::latest()->get();
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('foto', function ($row) {
+                return '<img src="' . asset('storage/' . $row->foto) . '" width="50">';
+            })
+            ->addColumn('action', function ($row) {
+                $btn = '<a href="' . route('pengelolas.show', $row->id) . '" class="btn btn-info btn-sm">Detail</a> ';
+                
+                if (auth()->user()->can('pengelola-edit')) {
+                    $btn .= '<a href="' . route('pengelolas.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a> ';
+                }
+
+                if (auth()->user()->can('pengelola-delete')) {
+                    $btn .= '<form action="' . route('pengelolas.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Hapus pengelola ini?\')">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-danger btn-sm">Hapus</button>';
+                    $btn .= '</form>';
+                }
+
+                return $btn;
+            })
+            ->rawColumns(['foto', 'action'])
+            ->make(true);
     }
+
+    return view('pengelolas.index');
+}
 
     /**
      * Menampilkan form untuk membuat pengelola baru.

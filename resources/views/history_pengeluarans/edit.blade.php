@@ -18,7 +18,7 @@
         <div class="card-body">
             <form action="{{ route('history_pengeluarans.update', $historyPengeluaran->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                @method('PUT') <!-- Menandakan bahwa ini adalah request update -->
+                @method('PUT')
 
                 <!-- Properti -->
                 <div class="mb-3">

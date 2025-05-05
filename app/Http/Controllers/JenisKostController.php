@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JenisKost;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class JenisKostController extends Controller
@@ -24,11 +25,18 @@ class JenisKostController extends Controller
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
                     $btn = '<a href="' . route('jeniskosts.show', $row->id) . '" class="edit btn btn-info btn-sm">Show</a> ';
-                    $btn .= '<a href="' . route('jeniskosts.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a> ';
-                    $btn .= '<form action="' . route('jeniskosts.destroy', $row->id) . '" method="POST" style="display:inline;">
-                                ' . csrf_field() . method_field("DELETE") . '
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Are you sure?\')">Delete</button>
-                             </form>';
+                
+                    if (Auth::user()->can('jeniskost-edit')) {
+                        $btn .= '<a href="' . route('jeniskosts.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a> ';
+                    }
+                
+                    if (Auth::user()->can('jeniskost-destroy')) {
+                        $btn .= '<form action="' . route('jeniskosts.destroy', $row->id) . '" method="POST" style="display:inline;">
+                                    ' . csrf_field() . method_field("DELETE") . '
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Are you sure?\')">Delete</button>
+                                 </form>';
+                    }
+                
                     return $btn;
                 })
                 ->rawColumns(['action'])

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Peraturans;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class PeraturanController extends Controller
 {
@@ -17,12 +18,35 @@ class PeraturanController extends Controller
     }
 
 
-    public function index()
-    {
-        $peraturans = Peraturans::latest()->paginate(10);
-        return view('peraturans.index', compact('peraturans'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $data = Peraturans::latest()->get();
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('action', function ($row) {
+                $btn = '';
+
+                if (auth()->user()->can('peraturan-edit')) {
+                    $btn .= '<a href="' . route('peraturans.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a> ';
+                }
+
+                if (auth()->user()->can('peraturan-delete')) {
+                    $btn .= '<form action="' . route('peraturans.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus?\')">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-danger btn-sm">Hapus</button>';
+                    $btn .= '</form>';
+                }
+
+                return $btn;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    return view('peraturans.index');
+}
 
     public function create()
     {

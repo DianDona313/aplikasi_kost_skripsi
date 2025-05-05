@@ -33,12 +33,16 @@
                     </div>
                 @endif
                 <a href="{{ route('properties.index') }}" class="btn btn-secondary">Kembali</a>
+                @can('properti-edit')
                 <a href="{{ route('properties.edit', $property->id) }}" class="btn btn-warning">Edit</a>
+                @endcan
+                @can('properti-delete')
                 <form action="{{ route('properties.destroy', $property->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Hapus</button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>

@@ -17,12 +17,16 @@
                 </div>
 
                 <a href="{{ route('jeniskosts.index') }}" class="btn btn-secondary">Kembali</a>
+                @can('jeniskost-edit')
                 <a href="{{ route('jeniskosts.edit', $jeniskost->id) }}" class="btn btn-warning">Edit</a>
+                @endcan
+                @can('jeniskost-delete')
                 <form action="{{ route('jeniskosts.destroy', $jeniskost->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Hapus</button>
                 </form>
+                @endcan
             </div>
         </div>
     </div>

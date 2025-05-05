@@ -17,12 +17,17 @@
                 </div>
 
                 <a href="{{ route('peraturans.index') }}" class="btn btn-secondary">Kembali</a>
-                <a href="{{ route('peraturans.edit', $peraturan->id) }}" class="btn btn-warning">Edit</a>
-                <form action="{{ route('peraturans.destroy', $peraturan->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Hapus</button>
-                </form>
+                @can('peraturan-edit')
+                    <a href="{{ route('peraturans.edit', $peraturan->id) }}" class="btn btn-warning">Edit</a>
+                @endcan
+                @can('peraturan-delete')
+                    <form action="{{ route('peraturans.destroy', $peraturan->id) }}" method="POST" class="d-inline"
+                        onsubmit="return confirm('Yakin ingin menghapus?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Hapus</button>
+                    </form>
+                @endcan
             </div>
         </div>
     </div>
