@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Metode_Pembayaran;
 use App\Models\Payment;
 use App\Models\Penyewa;
 use Illuminate\Http\Request;
@@ -20,44 +21,45 @@ class PaymentController extends Controller
     }
 
     public function index(Request $request)
-{
-    if ($request->ajax()) {
-        $payments = Payment::with('user')->latest();
+    {
+        if ($request->ajax()) {
+            $payments = Payment::with('user')->latest();
 
-        return DataTables::of($payments)
-            ->addIndexColumn()
-            ->addColumn('user', fn($row) => $row->user->name ?? 'Tidak Diketahui')
-            ->addColumn('jumlah', fn($row) => 'Rp ' . number_format($row->jumlah, 0, ',', '.'))
-            ->addColumn('sisa', fn($row) => 'Rp ' . number_format($row->sisa_pembayaran, 0, ',', '.'))
-            ->addColumn('metode', fn($row) => ucfirst($row->payment_method))
-            ->addColumn('status', function ($row) {
-                return match ($row->payment_status) {
-                    'paid' => '<span class="badge bg-success">Lunas</span>',
-                    'pending' => '<span class="badge bg-warning">Menunggu</span>',
-                    default => '<span class="badge bg-danger">Gagal</span>',
-                };
-            })
-            ->addColumn('bukti', fn($row) => '<img src="' . asset('storage/' . $row->foto) . '" width="50">')
-            ->addColumn('action', function ($row) {
-                $detail = '<a href="' . route('payments.show', $row->id) . '" class="btn btn-info btn-sm">Detail</a>';
-                $edit = '<a href="' . route('payments.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>';
-                $delete = '<form action="' . route('payments.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus pembayaran ini?\')">'
+            return DataTables::of($payments)
+                ->addIndexColumn()
+                ->addColumn('user', fn($row) => $row->user->name ?? 'Tidak Diketahui')
+                ->addColumn('jumlah', fn($row) => 'Rp ' . number_format($row->jumlah, 0, ',', '.'))
+                ->addColumn('sisa', fn($row) => 'Rp ' . number_format($row->sisa_pembayaran, 0, ',', '.'))
+                ->addColumn('metode', fn($row) => ucfirst($row->payment_method))
+                ->addColumn('status', function ($row) {
+                    return match ($row->payment_status) {
+                        'paid' => '<span class="badge bg-success">Lunas</span>',
+                        'pending' => '<span class="badge bg-warning">Menunggu</span>',
+                        default => '<span class="badge bg-danger">Gagal</span>',
+                    };
+                })
+                ->addColumn('bukti', fn($row) => '<img src="' . asset('storage/' . $row->foto) . '" width="50">')
+                ->addColumn('action', function ($row) {
+                    $detail = '<a href="' . route('payments.show', $row->id) . '" class="btn btn-info btn-sm">Detail</a>';
+                    $edit = '<a href="' . route('payments.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>';
+                    $delete = '<form action="' . route('payments.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus pembayaran ini?\')">'
                         . csrf_field() . method_field('DELETE')
                         . '<button type="submit" class="btn btn-danger btn-sm">Hapus</button></form>';
-                return $detail . ' ' . $edit . ' ' . $delete;
-            })
-            ->rawColumns(['status', 'bukti', 'action'])
-            ->make(true);
-    }
+                    return $detail . ' ' . $edit . ' ' . $delete;
+                })
+                ->rawColumns(['status', 'bukti', 'action'])
+                ->make(true);
+        }
 
-    return view('payments.index');
-}
+        return view('payments.index');
+    }
 
     public function create()
     {
+        $paymentMethods = Metode_Pembayaran::all();
         $bookings = Booking::all();
         $penyewas = Penyewa::all();
-        return view('payments.create', compact('bookings', 'penyewas'));
+        return view('payments.create', compact('bookings', 'penyewas', 'paymentMethods'));
     }
 
     public function store(Request $request)
@@ -119,4 +121,15 @@ class PaymentController extends Controller
         return redirect()->route('payments.index')
             ->with('success', 'Pembayaran berhasil dihapus.');
     }
+
+    public function getBookingDetail($id)
+    {
+        $booking = Booking::with(['penyewa', 'room'])->findOrFail($id);
+
+        return response()->json([
+            'penyewa' => $booking->penyewa ? $booking->penyewa->only(['id', 'nama']) : null,
+            'harga_kamar' => $booking->room ? $booking->room->harga : null,
+        ]);
+    }
+
 }

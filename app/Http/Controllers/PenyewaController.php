@@ -62,21 +62,31 @@ class PenyewaController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:penyewas,email',
-            'nohp' => 'required|string|max:15',
-            'alamat' => 'required|string',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            // 'created_by'    => 'required|integer',
-        ]);
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'email' => 'required|email|unique:penyewas,email',
+        'nohp' => 'required|string|max:15',
+        'alamat' => 'required|string',
+        'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
 
-        Penyewa::create($request->all());
+    $data = $request->only(['nama', 'email', 'nohp', 'alamat', 'jenis_kelamin']);
 
-        return redirect()->route('penyewas.index')
-            ->with('success', 'Penyewa berhasil ditambahkan.');
+    if ($request->hasFile('foto')) {
+        $file = $request->file('foto');
+        $path = $file->store('penyewas', 'public'); // simpan di folder penyewas
+        $data['foto'] = $path;
     }
+
+    Penyewa::create($data);
+
+    return redirect()->route('penyewas.index')
+        ->with('success', 'Penyewa berhasil ditambahkan.');
+}
+
+
 
     /**
      * Display the specified resource.
@@ -101,21 +111,37 @@ class PenyewaController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Penyewa $penyewa)
-    {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:penyewas,email,' . $penyewa->id,
-            'nohp' => 'required|string|max:15',
-            'alamat' => 'required|string',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            // 'updated_by'    => 'required|integer',
-        ]);
+{
+    $request->validate([
+        'nama' => 'required|string|max:255',
+        'email' => 'required|email|unique:penyewas,email,' . $penyewa->id,
+        'nohp' => 'required|string|max:15',
+        'alamat' => 'required|string',
+        'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',  // validasi foto
+    ]);
 
-        $penyewa->update($request->all());
+    // Ambil data kecuali foto dulu
+    $data = $request->only(['nama', 'email', 'nohp', 'alamat', 'jenis_kelamin']);
 
-        return redirect()->route('penyewas.index')
-            ->with('success', 'Penyewa berhasil diperbarui.');
+    // Jika ada file foto baru, simpan dan update path foto
+    if ($request->hasFile('foto')) {
+        // Hapus foto lama jika ada (opsional)
+        if ($penyewa->foto) {
+            \Storage::disk('public')->delete($penyewa->foto);
+        }
+
+        $file = $request->file('foto');
+        $path = $file->store('penyewas', 'public'); // simpan ke storage/app/public/penyewas
+        $data['foto'] = $path;
     }
+
+    $penyewa->update($data);
+
+    return redirect()->route('penyewas.index')
+        ->with('success', 'Penyewa berhasil diperbarui.');
+}
+
 
     /**
      * Remove the specified resource from storage.

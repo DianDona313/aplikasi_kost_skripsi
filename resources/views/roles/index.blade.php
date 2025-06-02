@@ -12,7 +12,7 @@
         @endif
         @can('role-create')
             <a class="btn btn-custom-orange mb-3" href="{{ route('roles.create') }}">
-                <i class="fa fa-plus me-1"></i> Create New Role
+                <i class="fa fa-plus me-1" style="color: #FDE5AF;"></i> Create New Role
             </a>
         @endcan
         

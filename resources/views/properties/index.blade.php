@@ -43,28 +43,46 @@
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
     <script>
-        $(function () {
+        $(function() {
             $('#properties-table').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('properties.index') }}",
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', className: 'text-center' },
-                    { data: 'nama', name: 'nama' },
-                    { data: 'alamat', name: 'alamat' },
-                    { data: 'kota', name: 'kota' },
-                    { 
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'nama',
+                        name: 'nama'
+                    },
+                    {
+                        data: 'alamat',
+                        name: 'alamat'
+                    },
+                    {
+                        data: 'kota',
+                        name: 'kota'
+                    },
+                    {
                         data: 'foto',
                         name: 'foto',
-                        render: function(data, type, full, meta){
+                        render: function(data, type, full, meta) {
                             console.log(data);
-                            
+
                             return `<img src="/storage/${data}" width="60" class="img-thumbnail"/>`;
                         },
                         orderable: false,
                         searchable: false
                     },
-                    { data: 'action', name: 'action', orderable: false, searchable: false, className: 'text-center' },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center'
+                    },
                 ]
             });
         });

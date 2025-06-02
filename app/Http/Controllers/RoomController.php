@@ -24,46 +24,57 @@ class RoomController extends Controller
         $this->middleware('permission:room-delete', ['only' => ['destroy']]);
     }
     public function index(Request $request)
-{
-    if ($request->ajax()) {
-        $subQuery = Room::selectRaw('MIN(id) as id')
-            ->groupBy('room_name');
+    {
+        // dd($data);
+        if ($request->ajax()) {
+            $subQuery = Room::selectRaw('MIN(id) as id')
+                ->groupBy('room_name');
 
-        $data = Room::whereIn('id', $subQuery)->latest()->get();
+            $data = Room::with('properti')->whereIn('id', $subQuery)->latest()->get();
 
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->addColumn('is_available', function ($row) {
-                return $row->is_available 
-                    ? '<span class="badge bg-success">Tersedia</span>' 
-                    : '<span class="badge bg-danger">Tidak Tersedia</span>';
-            })
-            ->addColumn('harga', function ($row) {
-                return 'Rp ' . number_format($row->harga, 0, ',', '.');
-            })
-            ->addColumn('action', function ($row) {
-                $btn = '<a href="' . url('/rooms/' . urlencode($row->id)) . '" class="btn btn-info btn-sm">Detail</a>';
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('foto', function ($row) {
+                    return $row->foto ?? '-';
+                })
+                ->addColumn('properti', function ($row) {
+                    return $row->properti->nama ?? '-';
+                })
+                ->addColumn('is_available', function ($row) {
+                    return $row->is_available
+                        ? '<span class="badge bg-success">Tersedia</span>'
+                        : '<span class="badge bg-danger">Tidak Tersedia</span>';
+                })
+                ->addColumn('harga', function ($row) {
+                    // Periksa apakah harga tidak null dan merupakan angka
+                    $harga = is_numeric($row->harga) ? $row->harga : 0; // Default ke 0 jika tidak valid
+                    return 'Rp ' . number_format($harga, 0, ',', '.');
+                    // return $row->harga;
+                })
 
-                if (auth()->user()->can('room-edit')) {
-                    $btn .= ' <a href="' . route('rooms.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>';
-                }
+                ->addColumn('action', function ($row) {
+                    $btn = '<a href="' . url('/rooms/' . urlencode($row->id)) . '" class="btn btn-info btn-sm">Detail</a>';
 
-                if (auth()->user()->can('room-delete')) {
-                    $btn .= ' <form action="' . route('rooms.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus kamar ini?\')">';
-                    $btn .= csrf_field();
-                    $btn .= method_field('DELETE');
-                    $btn .= '<button type="submit" class="btn btn-danger btn-sm">Hapus</button>';
-                    $btn .= '</form>';
-                }
+                    if (auth()->user()->can('room-edit')) {
+                        $btn .= ' <a href="' . route('rooms.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>';
+                    }
 
-                return $btn;
-            })
-            ->rawColumns(['action', 'is_available'])
-            ->make(true);
+                    if (auth()->user()->can('room-delete')) {
+                        $btn .= ' <form action="' . route('rooms.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus kamar ini?\')">';
+                        $btn .= csrf_field();
+                        $btn .= method_field('DELETE');
+                        $btn .= '<button type="submit" class="btn btn-danger btn-sm">Hapus</button>';
+                        $btn .= '</form>';
+                    }
+
+                    return $btn;
+                })
+                ->rawColumns(['action', 'is_available', 'foto'])
+                ->make(true);
+        }
+
+        return view('rooms.index');
     }
-
-    return view('rooms.index');
-}
 
     /**
      * Menampilkan form untuk membuat kamar baru.
@@ -80,7 +91,6 @@ class RoomController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         $request->validate([
             'properti_id' => 'required|exists:properties,id',
             'room_name' => 'required|string|max:255',
@@ -89,16 +99,25 @@ class RoomController extends Controller
             'is_available' => 'required|in:Ya,Tidak',
             'fasilitas' => 'required|array',
             'fasilitas.*' => 'exists:fasilitas,id',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // validasi foto
         ]);
 
         $data = $request->only(['properti_id', 'room_name', 'room_deskription', 'harga', 'is_available']);
         $data['created_by'] = 1;
         $data['updated_by'] = 1;
 
-        // dd($request->fasilitas);
-        $fasilitas = $request->fasilitas;
-        for ($i = 0; $i < count($fasilitas); $i++) {
-            $f = $fasilitas[$i];
+        // Upload foto jika ada
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $path = $file->store('rooms', 'public'); // simpan ke storage/app/public/rooms
+            $data['foto'] = $path;
+        } else {
+            $data['foto'] = null; // atau bisa default foto
+        }
+        // dd($data);
+
+        // Simpan untuk setiap fasilitas (jika fasilitas dipecah jadi satu record per baris)
+        foreach ($request->fasilitas as $f) {
             Room::create([
                 'properti_id' => $data['properti_id'],
                 'room_name' => $data['room_name'],
@@ -106,13 +125,16 @@ class RoomController extends Controller
                 'harga' => $data['harga'],
                 'is_available' => $data['is_available'],
                 'fasilitas' => $f,
+                'foto' => $data['foto'],
+                'created_by' => $data['created_by'],
+                'updated_by' => $data['updated_by'],
             ]);
-
         }
 
         return redirect()->route('rooms.index')
             ->with('success', 'Kamar berhasil ditambahkan.');
     }
+
 
 
     /**
@@ -198,4 +220,10 @@ class RoomController extends Controller
         return redirect()->route('rooms.index')
             ->with('success', 'Kamar berhasil dihapus permanen.');
     }
+    public function daftarKamar()
+    {
+        $rooms = Room::with('properti')->get();
+        return view('daftarkamar', compact('rooms'));
+    }
+
 }

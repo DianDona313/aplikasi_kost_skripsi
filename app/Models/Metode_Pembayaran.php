@@ -25,5 +25,9 @@ class Metode_Pembayaran extends Model
     {
         return $this->hasOne(Properties::class, 'id','property_id');
     }
+    public function payment()
+    {
+        return $this->hasMany(Payment::class, 'metode_pembayaran_id');
+    }
     
 }

@@ -23,7 +23,7 @@
 
                     <div class="mb-3">
                         <label for="deskripsi" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="deskripsi" name="deskripsi" rows="4" required>{{ old('deskripsi') }}</textarea>
+                        <textarea class="form-control" id="deskripsi" name="deskripsi" rows="4" ></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Simpan</button>

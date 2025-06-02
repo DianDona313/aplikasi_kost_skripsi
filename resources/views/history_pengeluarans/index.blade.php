@@ -4,12 +4,12 @@
     <div class="container">
         <h2 class="mb-4" style="color: #FDE5AF;">Daftar History Pengeluaran</h2>
         @can('history_pengeluarans-create')
-        <a href="{{ route('history_pengeluarans.create') }}" class="btn btn-custom-orange mb-3">
-            <i class="fas fa-plus me-1"></i> Tambah Pengeluaran
-        </a>
+            <a href="{{ route('history_pengeluarans.create') }}" class="btn btn-custom-orange mb-3">
+                <i class="fas fa-plus me-1"></i> Tambah Pengeluaran
+            </a>
         @endcan
 
-
+        {{-- Tampilkan pesan sukses jika ada --}}
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
@@ -18,50 +18,44 @@
 
         <div class="card">
             <div class="card-body">
-                <table class="table table-striped">
+                <table class="table table-striped" id="historyTable">
                     <thead>
                         <tr class="text-center">
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Nama Pengeluaran</th>
                             <th>Jumlah</th>
                             <th>Tanggal</th>
+                            <th>Properti</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($historyPengeluaran as $pengeluaran)
-                            <tr class="text-center">
-                                <td>{{ $pengeluaran->id }}</td>
-                                <td>{{ $pengeluaran->nama_pengeluaran }}</td>
-                                <td>Rp {{ number_format($pengeluaran->jumlah_pengeluaran, 0, ',', '.') }}</td>
-                                <td>{{ $pengeluaran->tanggal_pengeluaran }}</td>
-                                <td>
-                                    <a href="{{ route('history_pengeluarans.show', $pengeluaran->id) }}"
-                                        class="btn btn-info btn-sm">Detail</a>
-
-                                    @can('history_pengeluarans-edit')
-                                        <a href="{{ route('history_pengeluarans.edit', $pengeluaran->id) }}"
-                                            class="btn btn-warning btn-sm">Edit</a>
-                                    @endcan
-                                    @can('history_pengeluarans-delete')
-                                        <form action="{{ route('history_pengeluarans.destroy', $pengeluaran->id) }}"
-                                            method="POST" class="d-inline"
-                                            onsubmit="return confirm('Yakin ingin menghapus?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                        </form>
-                                    @endcan
-                                </td>
-                            </tr>
-                        @endforeach
+                        <!-- Data akan dimuat menggunakan AJAX -->
                     </tbody>
                 </table>
-
-                <div class="d-flex justify-content-center mt-3">
-                    {!! $historyPengeluaran->links() !!}
-                </div>
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#historyTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('history_pengeluarans.index') }}", // URL untuk AJAX request
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex' }, // Kolom index
+                    { data: 'nama_pengeluaran', name: 'nama_pengeluaran' },
+                    { data: 'jumlah_pengeluaran', name: 'jumlah_pengeluaran', render: function(data) {
+                        return 'Rp ' + data.toLocaleString(); // Format jumlah uang
+                    }},
+                    { data: 'tanggal_pengeluaran', name: 'tanggal_pengeluaran' },
+                    { data: 'property', name: 'property' }, // Kolom properti
+                    { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+                ]
+            });
+        });
+    </script>
+    @endpush
 @endsection

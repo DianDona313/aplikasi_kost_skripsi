@@ -7,6 +7,7 @@ use App\Models\Kategori_Pengeluaran;
 use App\Models\Properties;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\DataTables;
 
 class HistoryPengeluaranController extends Controller
 {
@@ -20,12 +21,40 @@ class HistoryPengeluaranController extends Controller
 
     }
 
-    public function index()
-    {
-        $historyPengeluaran = HistoryPengeluaran::latest()->paginate(5);
-        return view('history_pengeluarans.index', compact('historyPengeluaran'))
-            ->with('i', (request()->input('page', 1) - 1) * 5);
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $data = HistoryPengeluaran::with('property')->latest()->get(); // Mengambil data history pengeluaran dengan relasi property
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('aksi', function ($row) {
+                $edit = '';
+                $delete = '';
+
+                if (auth()->user()->can('history_pengeluarans-edit')) {
+                    $edit = '<a href="' . route('history_pengeluarans.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>';
+                }
+
+                if (auth()->user()->can('history_pengeluarans-delete')) {
+                    $delete = '
+                        <form action="' . route('history_pengeluarans.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus?\');">
+                            ' . csrf_field() . method_field('DELETE') . '
+                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                        </form>';
+                }
+
+                return $edit . ' ' . $delete;
+            })
+            ->addColumn('property', function ($row) {
+                return $row->property->nama ?? 'Tidak Diketahui'; // Menampilkan nama properti
+            })
+            ->rawColumns(['aksi'])
+            ->make(true);
     }
+
+    return view('history_pengeluarans.index');
+}
 
     public function create()
     {

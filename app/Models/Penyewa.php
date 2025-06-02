@@ -17,6 +17,7 @@ class Penyewa extends Model
         'nohp',
         'alamat',
         'jenis_kelamin',
+        'foto',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -32,7 +33,7 @@ class Penyewa extends Model
     // }
     public function bookings()
     {
-        return $this->hasMany(Properties::class);
+        return $this->hasMany(Booking::class);
     }
     public function historyPesan()
     {

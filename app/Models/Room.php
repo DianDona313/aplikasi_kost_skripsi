@@ -19,6 +19,7 @@ class Room extends Model
         'harga',
         'is_available',
         'fasilitas',
+        'foto',
         'created_by',
         'updated_by',
         'deleted_by',

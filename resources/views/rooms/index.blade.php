@@ -20,8 +20,10 @@
             <div class="card-body">
                 <table class="table table-striped text-center" id="rooms-table">
                     <thead>
-                        <tr>
+                        <tr class="text-center">
                             <th>No</th>
+                            <th>Foto</th>
+                            <th>Nama Kost</th>
                             <th>Nama Kamar</th>
                             <th>Harga</th>
                             <th>Ketersediaan</th>
@@ -35,33 +37,60 @@
 @endsection
 
 @push('scripts')
-<script>
-    $(function () {
-        $('#rooms-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: "{{ route('rooms.index') }}",
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'room_name', name: 'room_name' },
-                { 
-                    data: 'harga', 
-                    name: 'harga',
-                    render: function(data) {
-                        return 'Rp ' + parseInt(data).toLocaleString('id-ID');
+    <script>
+        $(function() {
+            $('#rooms-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('rooms.index') }}",
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'foto',
+                        name: 'foto',
+                        render: function(data, type, full, meta) {
+                            if (!data) return '-';
+                            return `<img src="/storage/${data}" width="60" class="img-thumbnail"/>`;
+                        },
+                        orderable: false,
+                        searchable: false
+                    },
+{
+                        data: 'properti',
+                        name: 'properti'
+                    },
+                    {
+                        data: 'room_name',
+                        name: 'room_name'
+                    },
+                    
+                    {
+                        data: 'harga',
+                        name: 'harga',
+                        // render: function(data) {
+                        //     return 'Rp ' + parseInt(data).toLocaleString('id-ID');
+                        // }
+                    },
+                    {
+                        data: 'is_available',
+                        name: 'is_available',
+                        render: function(data) {
+                            return data ? '<span class="badge bg-success">Tersedia</span>' :
+                                '<span class="badge bg-danger">Tidak Tersedia</span>';
+                        }
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
                     }
-                },
-                { 
-                    data: 'is_available', 
-                    name: 'is_available',
-                    render: function(data) {
-                        return data ? '<span class="badge bg-success">Tersedia</span>' :
-                                       '<span class="badge bg-danger">Tidak Tersedia</span>';
-                    }
-                },
-                { data: 'action', name: 'action', orderable: false, searchable: false }
-            ]
+                ]
+            });
         });
-    });
-</script>
+    </script>
 @endpush

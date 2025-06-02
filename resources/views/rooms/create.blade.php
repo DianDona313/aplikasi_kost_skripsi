@@ -3,21 +3,21 @@
 @section('content')
     <div class="container">
         @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="card">
             <div class="card-header">
                 <h3>Tambah Kamar</h3>
             </div>
             <div class="card-body">
-                <form action="{{ route('rooms.store') }}" method="POST">
+                <form action="{{ route('rooms.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Properti</label>
@@ -58,6 +58,11 @@
                             </div>
                         @endforeach
                     </div>
+                    <div class="mb-3">
+    <label class="form-label">Foto Kamar</label>
+    <input type="file" name="foto" class="form-control" accept="image/*">
+</div>
+
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </form>
             </div>

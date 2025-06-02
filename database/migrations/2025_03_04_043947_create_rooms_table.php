@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('properti_id');
             $table->string('room_name');
             $table->string('room_deskription')->nullable();
-            $table->unsignedInteger('harga');
+            $table->unsignedInteger(column: 'harga');
             $table->string('is_available');
             $table->string('fasilitas');
             $table->softDeletes();

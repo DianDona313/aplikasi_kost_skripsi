@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('nohp');
             $table->string('alamat');
             $table->string('jenis_kelamin');
+            $table->string('foto')->nullable();
             $table->softDeletes();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();

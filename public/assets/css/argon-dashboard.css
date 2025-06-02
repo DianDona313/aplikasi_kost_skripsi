@@ -197,6 +197,16 @@
     }
 }
 
+#kostCarousel .carousel-caption h5 {
+    background-color: #246D15;
+    /* hijau tua */
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 8px;
+    color: #FDE5AF;
+    font-size: 1.1rem;
+}
+
 body {
     margin: 0;
     font-family: var(--bs-body-font-family);

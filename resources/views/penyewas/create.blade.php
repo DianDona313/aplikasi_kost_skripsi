@@ -16,8 +16,10 @@
 
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('penyewas.store') }}" method="POST">
+                {{-- Jangan lupa tambahkan enctype --}}
+                <form action="{{ route('penyewas.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+
                     <div class="mb-3">
                         <label for="nama" class="form-label">Nama</label>
                         <input type="text" name="nama" class="form-control" id="nama" required>
@@ -45,6 +47,11 @@
                             <option value="Laki-laki">Laki-laki</option>
                             <option value="Perempuan">Perempuan</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="foto" class="form-label">Foto (opsional)</label>
+                        <input type="file" name="foto" class="form-control" id="foto" accept="image/*">
                     </div>
 
                     <button type="submit" class="btn btn-primary">Simpan</button>

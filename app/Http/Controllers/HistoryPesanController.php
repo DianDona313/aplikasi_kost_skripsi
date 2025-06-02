@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HistoryPesan;
 use App\Models\Penyewa;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class HistoryPesanController extends Controller
 {
@@ -15,11 +16,34 @@ class HistoryPesanController extends Controller
         $this->middleware('permission:history_pesans-edit', ['only' => ['edit', 'update']]);
         $this->middleware('permission:history_pesans-delete', ['only' => ['destroy']]);
     }
-    public function index()
-    {
-        $historyPesans = HistoryPesan::latest()->paginate(10);
-        return view('history_pesans.index', compact('historyPesans'));
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $data = HistoryPesan::query();
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('action', function ($row) {
+                $buttons = '<a href="' . route('history_pesans.show', $row->id) . '" class="btn btn-info btn-sm">Detail</a> ';
+
+                if (auth()->user()->can('history_pesans-edit')) {
+                    $buttons .= '<a href="' . route('history_pesans.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a> ';
+                }
+
+                if (auth()->user()->can('history_pesans-delete')) {
+                    $buttons .= '<form action="' . route('history_pesans.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus?\')">'
+                        . csrf_field() . method_field('DELETE')
+                        . '<button type="submit" class="btn btn-danger btn-sm">Hapus</button></form>';
+                }
+
+                return $buttons;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    return view('history_pesans.index');
+}
 
     public function create()
     {

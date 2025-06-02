@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\FonnteService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(FonnteService::class, function ($app) {
+            return new FonnteService();
+        });
     }
 
     /**

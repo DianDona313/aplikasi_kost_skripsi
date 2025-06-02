@@ -9,7 +9,6 @@
             </a>
         @endcan
 
-
         {{-- Tampilkan pesan sukses jika ada --}}
         @if (session('success'))
             <div class="alert alert-success">
@@ -17,12 +16,10 @@
             </div>
         @endif
 
-
-
         @can('booking-list')
             <div class="card">
                 <div class="card-body">
-                    <table class="table table-striped">
+                    <table class="table table-striped" id="bookingsTable">
                         <thead>
                             <tr class="text-center">
                                 <th>ID</th>
@@ -35,52 +32,32 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($bookings as $booking)
-                                <tr class="text-center">
-                                    <td class="text-center">{{ ++$i }}</td>
-                                    <td>{{ $booking->property->nama ?? 'Tidak Diketahui' }}</td>
-                                    <td>{{ $booking->penyewa->nama ?? 'Tidak Diketahui' }}</td>
-                                    <td>{{ $booking->room->room_name ?? 'Tidak Diketahui' }}</td>
-                                    <td>{{ $booking->start_date }} - {{ $booking->end_date }}</td>
-                                    <td>
-                                        @if ($booking->status == 'confirmed')
-                                            <span class="badge bg-success">Terkonfirmasi</span>
-                                        @elseif($booking->status == 'pending')
-                                            <span class="badge bg-warning">Menunggu</span>
-                                        @else
-                                            <span class="badge bg-danger">Dibatalkan</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @can('booking-list')
-                                            <a href="{{ route('bookings.show', $booking->id) }}"
-                                                class="btn btn-info btn-sm">Detail</a>
-                                        @endcan
-
-                                        @can('booking-edit')
-                                            <a href="{{ route('bookings.edit', $booking->id) }}"
-                                                class="btn btn-warning btn-sm">Edit</a>
-                                        @endcan
-                                        @can('booking-delete')
-                                            <form action="{{ route('bookings.destroy', $booking->id) }}" method="POST"
-                                                class="d-inline" onsubmit="return confirm('Yakin ingin menghapus booking ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                            @endcan
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
+                            <!-- Data will be populated by DataTables via AJAX -->
                         </tbody>
                     </table>
-
-                    {{-- Pagination --}}
-                    <div class="d-flex justify-content-center mt-3">
-                        {!! $bookings->links() !!}
-                    </div>
                 </div>
             </div>
         @endcan
     </div>
+
+    @push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#bookingsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('bookings.index') }}", // Menunjuk route controller booking
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex' }, // Kolom index
+                    { data: 'properti', name: 'properti' },
+                    { data: 'penyewa', name: 'penyewa' },
+                    { data: 'kamar', name: 'kamar' },
+                    { data: 'periode', name: 'periode' },
+                    { data: 'status', name: 'status' },
+                    { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+                ]
+            });
+        });
+    </script>
+    @endpush
 @endsection

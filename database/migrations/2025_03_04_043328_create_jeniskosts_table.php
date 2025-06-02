@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jeniskosts', function (Blueprint $table) {
-            $table->id();
-            $table->string('nama');
-            $table->string('deskripsi');
-            $table->softDeletes();
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->unsignedBigInteger('deleted_by')->nullable();
-            $table->timestamps();
-        });
+            Schema::create('jeniskosts', function (Blueprint $table) {
+                $table->id();
+                $table->string('nama');
+                $table->string('deskripsi')->nullable();
+                $table->softDeletes();
+                $table->unsignedBigInteger('created_by')->nullable();
+                $table->unsignedBigInteger('updated_by')->nullable();
+                $table->unsignedBigInteger('deleted_by')->nullable();
+                $table->timestamps();
+            });
     }
 
     /**

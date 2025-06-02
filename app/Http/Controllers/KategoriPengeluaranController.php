@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategori_Pengeluaran;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class KategoriPengeluaranController extends Controller
 {
@@ -16,14 +17,32 @@ class KategoriPengeluaranController extends Controller
         $this->middleware('permission:kategori_pengeluarans-delete', ['only' => ['destroy']]);
 
     }
-    public function index()
-    {
-        // Mengambil daftar kategori dengan pagination
-        $kategoriPengeluarans = Kategori_Pengeluaran::latest()->paginate(10);
+    public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $data = Kategori_Pengeluaran::query();
 
-        // Kirim data ke view
-        return view('kategori_pengeluarans.index', compact('kategoriPengeluarans'));
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('action', function ($row) {
+                $edit = auth()->user()->can('kategori_pengeluaran-edit') 
+                    ? '<a href="' . route('kategori_pengeluarans.edit', $row->id) . '" class="btn btn-warning btn-sm">Edit</a>' 
+                    : '';
+
+                $delete = auth()->user()->can('kategori_pengeluaran-delete') 
+                    ? '<form action="' . route('kategori_pengeluarans.destroy', $row->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Yakin ingin menghapus kategori ini?\')">'
+                        . csrf_field() . method_field('DELETE')
+                        . '<button type="submit" class="btn btn-danger btn-sm">Hapus</button></form>'
+                    : '';
+
+                return $edit . ' ' . $delete;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    return view('kategori_pengeluarans.index');
+}
 
     public function create()
     {

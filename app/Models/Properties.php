@@ -12,17 +12,7 @@ class Properties extends Model
 
     protected $table = 'properties'; // Explicitly defining table name if necessary
 
-    protected $fillable = [
-        'nama',
-        'alamat',
-        'kota',
-        'jeniskost_id',
-        'foto',
-        'deskripsi',
-        'created_by',
-        'updated_by',
-        'deleted_by',
-    ];
+    protected $guarded = ['id'];
 
     protected $dates = ['deleted_at']; // Enables SoftDeletes
 
@@ -57,4 +47,10 @@ class Properties extends Model
     {
         return $this->hasMany(HistoryPengeluaran::class, 'properti_id');
     }
+    // public function peraturans()
+    // {
+    //     // Ubah ini sesuai dengan struktur tabel pivot Anda
+
+    //     return $this->belongsTo(Peraturans::class,'peraturan_id');
+    // }
 }

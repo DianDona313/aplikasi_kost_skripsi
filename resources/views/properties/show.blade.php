@@ -26,7 +26,7 @@
                     <h5 class="card-title">Deskripsi</h5>
                     <p class="card-text">{{ $property->deskripsi }}</p>
                 </div>
-                @if($property->foto)
+                @if ($property->foto)
                     <div class="mb-3">
                         <h5 class="card-title">Foto</h5>
                         <img src="{{ asset('storage/' . $property->foto) }}" class="img-fluid" alt="Foto Properti">
@@ -34,14 +34,15 @@
                 @endif
                 <a href="{{ route('properties.index') }}" class="btn btn-secondary">Kembali</a>
                 @can('properti-edit')
-                <a href="{{ route('properties.edit', $property->id) }}" class="btn btn-warning">Edit</a>
+                    <a href="{{ route('properties.edit', $property->id) }}" class="btn btn-warning">Edit</a>
                 @endcan
                 @can('properti-delete')
-                <form action="{{ route('properties.destroy', $property->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Hapus</button>
-                </form>
+                    <form action="{{ route('properties.destroy', $property->id) }}" method="POST" class="d-inline"
+                        onsubmit="return confirm('Yakin ingin menghapus?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Hapus</button>
+                    </form>
                 @endcan
             </div>
         </div>

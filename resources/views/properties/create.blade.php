@@ -52,6 +52,18 @@
                         <label for="deskripsi" class="form-label">Deskripsi</label>
                         <textarea name="deskripsi" class="form-control" id="deskripsi" rows="3"></textarea>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Peraturan</label><br>
+                        @foreach ($peraturans as $p)
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="peraturans[]"
+                                    value="{{ $p->id }}" id="peraturan{{ $p->id }}">
+                                <label class="form-check-label"
+                                    for="peraturan{{ $p->id }}">{{ $p->nama }}</label>
+                            </div>
+                        @endforeach
+                    </div>
+                    
 
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </form>

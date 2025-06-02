@@ -9,54 +9,49 @@
             </a>
         @endcan
 
-
+        {{-- Tampilkan pesan sukses jika ada --}}
         @if (session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
             </div>
         @endif
 
-        <div class="card">
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr class="text-center">
-                            <th>No</th>
-                            <th>Nama</th>
-                            <th>Deskripsi</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($fasilitas as $index => $item)
+        @can('fasilitas-list')
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-striped" id="fasilitasTable">
+                        <thead>
                             <tr class="text-center">
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->nama }}</td>
-                                <td>{{ $item->deskripsi }}</td>
-                                <td>
-                                    @can('fasilitas-edit')
-                                        <a href="{{ route('fasilitas.edit', $item->id) }}"
-                                            class="btn btn-warning btn-sm">Edit</a>
-                                    @endcan
-                                    @can('fasilitas-delete')
-                                        <form action="{{ route('fasilitas.destroy', $item->id) }}" method="POST"
-                                            class="d-inline" onsubmit="return confirm('Yakin ingin menghapus?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                                        </form>
-                                    @endcan
-                                </td>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Deskripsi</th>
+                                <th>Aksi</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
-                {{-- Pagination --}}
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $fasilitas->links() }}
+                        </thead>
+                        <tbody>
+                            <!-- Data akan dimuat menggunakan AJAX -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
+        @endcan
     </div>
+
+    @push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#fasilitasTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: "{{ route('fasilitas.index') }}", // URL untuk AJAX request
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex' }, // Kolom index
+                    { data: 'nama', name: 'nama' },
+                    { data: 'deskripsi', name: 'deskripsi' },
+                    { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+                ]
+            });
+        });
+    </script>
+    @endpush
 @endsection

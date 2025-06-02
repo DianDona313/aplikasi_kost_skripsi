@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\JenisKost;
+use App\Models\Peraturans;
 use App\Models\Properties;
 use Illuminate\Http\Request;
+use PhpParser\Builder\Property;
+use Str;
 use Yajra\DataTables\DataTables;
 
 class PropertiController extends Controller
@@ -24,15 +27,17 @@ class PropertiController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-                    $btn = '<a href="' . route('properties.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a>';
+                    $btn = '<a href="' . url('/properties/' . urlencode($row->id)) . '" class="btn btn-info btn-sm">Detail</a>';
+                    $btn .= ' <a href="' . route('properties.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a>';
                     $btn .= ' <form action="' . route('properties.destroy', $row->id) . '" method="POST" style="display:inline;">
-                            ' . csrf_field() . method_field("DELETE") . '
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                          </form>';
+                    ' . csrf_field() . method_field("DELETE") . '
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
+
         }
 
         return view('properties.index');
@@ -44,7 +49,8 @@ class PropertiController extends Controller
     public function create()
     {
         $jenisKosts = JenisKost::all();
-        return view('properties.create', compact('jenisKosts'));
+        $peraturans = Peraturans::all();
+        return view('properties.create', compact('jenisKosts', 'peraturans'));
     }
 
     /**
@@ -52,6 +58,7 @@ class PropertiController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi input
         $request->validate([
             'nama' => 'required',
             'alamat' => 'required',
@@ -59,30 +66,38 @@ class PropertiController extends Controller
             'jeniskost_id' => 'required|exists:jeniskosts,id',
             'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'deskripsi' => 'nullable|string',
-            // 'created_by' => 'required|integer',
+            'peraturans' => 'nullable|array',
+            'peraturans.*' => 'exists:peraturans,id',
         ]);
 
-        // Upload Foto
+        // Upload foto ke storage
+        $fotoPath = null;
         if ($request->hasFile('foto')) {
             $fotoPath = $request->file('foto')->store('uploads', 'public');
         }
 
+        $peraturanIds = $request->peraturans; // array: ['1', '2']
+        $peraturanString = implode(',', $peraturanIds); // hasil: "1,2"
+        // Loop setiap peraturan dan buat entri properti
         Properties::create([
             'nama' => $request->nama,
             'alamat' => $request->alamat,
             'kota' => $request->kota,
             'jeniskost_id' => $request->jeniskost_id,
-            'foto' => $fotoPath ?? "image",
+            'foto' => $fotoPath ?? 'default.jpg',
             'deskripsi' => $request->deskripsi,
-            'created_by' => $request->created_by,
-            'updated_by' => 1,
-            'deleted_by' => 1,
+            'peraturan_id' => $peraturanString,
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
+            'deleted_by' => null,
         ]);
 
         return redirect()
             ->route('properties.index')
             ->with('success', 'Properti berhasil ditambahkan.');
     }
+
+
 
     /**
      * Display the specified resource.
@@ -99,7 +114,12 @@ class PropertiController extends Controller
     public function edit(Properties $property)
     {
         $jenisKosts = JenisKost::all();
-        return view('properties.edit', compact('property', 'jenisKosts'));
+        $peraturan = Peraturans::all(); // Ambil semua peraturan
+
+        // Ubah peraturan_id menjadi array
+        $peraturanIds = explode(',', $property->peraturan_id);
+
+        return view('properties.edit', compact('property', 'jenisKosts', 'peraturan', 'peraturanIds'));
     }
 
     /**
@@ -145,4 +165,34 @@ class PropertiController extends Controller
         return redirect()->route('properties.index')
             ->with('success', 'Properti berhasil dihapus.');
     }
+    public function daftarkost()
+    {
+        // Ambil semua properti beserta rooms-nya
+        $properties = Properties::with('rooms')->get();
+        return view('daftarkost', compact('properties'));
+    }
+
+    // public function detailKost($id_properti)
+    // {
+    //     $properti = Properties::with('rooms')->where('id', $id_properti)->first();
+
+    //     if (!$properti) {
+    //         abort(404, 'Properti tidak ditemukan');
+    //     }
+
+    //     return view('detailkost', compact('properti'));
+    // }
+
+    public function detailKost($id_properti)
+    {
+        // Ambil properti lengkap dengan relasi: jenis kost dan kamar-kamarnya
+        $properti = Properties::with(['jeniskost', 'rooms'])
+            ->findOrFail($id_properti);
+
+        $rooms = $properti->rooms;
+
+        return view('detailkost', compact('properti','rooms'));
+    }
+
+
 }

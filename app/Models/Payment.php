@@ -38,6 +38,10 @@ class Payment extends Model
     {
         return $this->belongsTo(Booking::class, 'penyewa_id');
     }
+    public function metodePembayaran()
+    {
+        return $this->belongsTo(Metode_Pembayaran::class, 'metode_pembayaran_id');
+    }
 
     /**
      * Relasi ke User (satu pembayaran dilakukan oleh satu user)
