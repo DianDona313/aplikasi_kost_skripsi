@@ -132,4 +132,23 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function getDetails(Request $request)
+    {
+        $methodId = $request->query('method'); // Ambil ID dari query ?method=...
+
+        $metode = Metode_Pembayaran::find($methodId); // Cari berdasarkan ID
+
+        if (!$metode) {
+            return response()->json(['error' => 'Metode pembayaran tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'nama_bank' => $metode->nama_bank,
+            'nomor_rekening' => $metode->no_rek,
+            'atas_nama' => $metode->atas_nama
+        ]);
+    }
+
+
+
 }

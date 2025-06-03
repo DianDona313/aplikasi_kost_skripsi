@@ -414,48 +414,81 @@
 
     <!-- Modal Section - Dipindahkan ke luar loop dan diberi struktur yang benar -->
     @foreach ($rooms as $room)
-        <div class="modal fade" id="pesanModal{{ $room->id }}" tabindex="-1"
-            aria-labelledby="pesanModalLabel{{ $room->id }}" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form action="{{ route('bookings.store') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="room_id" value="{{ $room->id?? "" }}">
-                        <input type="hidden" name="property_id" value="{{ $room->properti_id?? "" }}">
-                        <input type="hidden" name="penyewa_id" value="{{ auth()->user()->id?? "" }}">
+    <div class="modal fade" id="pesanModal{{ $room->id }}" tabindex="-1"
+        aria-labelledby="pesanModalLabel{{ $room->id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('bookings.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="room_id" value="{{ $room->id ?? '' }}">
+                    <input type="hidden" name="property_id" value="{{ $room->properti_id ?? '' }}">
+                    <input type="hidden" name="penyewa_id" value="{{ auth()->user()->id ?? '' }}">
 
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="pesanModalLabel{{ $room->id }}">Form Pemesanan -
-                                {{ $room->room_name }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="pesanModalLabel{{ $room->id }}">Form Pemesanan -
+                            {{ $room->room_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="duration_{{ $room->id }}" class="form-label">Durasi Sewa</label>
+                            <select class="form-select" id="duration_{{ $room->id }}">
+                                <option value="" selected disabled>Pilih Durasi</option>
+                                <option value="12">1 Tahun</option>
+                                <option value="6">6 Bulan</option>
+                                <option value="3">3 Bulan</option>
+                                <option value="1">1 Bulan</option>
+                            </select>
                         </div>
 
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="start_date_{{ $room->id }}" class="form-label">Tanggal
-                                    Mulai</label>
-                                <input type="date" name="start_date" id="start_date_{{ $room->id }}"
-                                    class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="end_date_{{ $room->id }}" class="form-label">Tanggal
-                                    Selesai</label>
-                                <input type="date" name="end_date" id="end_date_{{ $room->id }}"
-                                    class="form-control" required>
-                            </div>
+                        <div class="mb-3">
+                            <label for="start_date_{{ $room->id }}" class="form-label">Tanggal Mulai</label>
+                            <input type="date" name="start_date" id="start_date_{{ $room->id }}"
+                                class="form-control" required>
                         </div>
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                            <button type="submit" class="btn btn-primary">Pesan Sekarang</button>
-                        </div>
-                    </form>
-                </div>
+                        <!-- Disembunyikan -->
+                        <input type="hidden" name="end_date" id="end_date_{{ $room->id }}">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">Pesan Sekarang</button>
+                    </div>
+                </form>
             </div>
         </div>
-    @endforeach
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const durationSelect = document.getElementById('duration_{{ $room->id }}');
+            const startDateInput = document.getElementById('start_date_{{ $room->id }}');
+            const endDateInput = document.getElementById('end_date_{{ $room->id }}');
+
+            function updateEndDate() {
+                const duration = parseInt(durationSelect.value);
+                const startDate = new Date(startDateInput.value);
+                if (!isNaN(duration) && startDateInput.value) {
+                    // Tambahkan durasi dalam bulan ke tanggal mulai
+                    const endDate = new Date(startDate);
+                    endDate.setMonth(endDate.getMonth() + duration);
+                    // Set nilai ke input tanggal selesai
+                    endDateInput.value = endDate.toISOString().split('T')[0];
+                } else {
+                    endDateInput.value = '';
+                }
+            }
+
+            durationSelect.addEventListener('change', updateEndDate);
+            startDateInput.addEventListener('change', updateEndDate);
+        });
+    </script>
+@endforeach
+
+
 
     <!-- Banner Section Start-->
     <div class="container-fluid banner bg-secondary my-5">

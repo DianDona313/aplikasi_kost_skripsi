@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Metode_Pembayaran;
 use App\Models\Penyewa;
 use App\Models\Properti;
 use App\Models\Properties;
@@ -102,13 +103,16 @@ class BookingController extends Controller
             'property_id' => 'required',
             'penyewa_id' => 'required',
             'room_id' => 'required',
-            'start_date' => 'required',
-            'end_date' => 'required',
-            // 'status' => 'required',
         ]);
 
+        // dd($request->all());
+
         $data = $request->all();
+        $penyewa = Penyewa::where('email', '=', Auth::user()->email)->first();
+        // dd($penyewa);
         $data['status'] = 'pending';
+        $data['penyewa_id'] = $penyewa->id;
+        $data['durasisewa'] = $request->duration;
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
@@ -120,10 +124,23 @@ class BookingController extends Controller
     /**
      * Menampilkan detail pemesanan tertentu.
      */
-    public function show(Booking $booking)
+    public function show($id)
     {
-        return view('bookings.show', compact('booking'));
+        $booking = Booking::with(['property', 'penyewa', 'room'])->findOrFail($id);
+
+        // Menentukan status booking
+        $status = [
+            'confirmed' => ['class' => 'bg-success', 'icon' => 'fas fa-check-circle', 'text' => 'Terkonfirmasi'],
+            'pending' => ['class' => 'bg-warning', 'icon' => 'fas fa-clock', 'text' => 'Menunggu'],
+            'cancelled' => ['class' => 'bg-danger', 'icon' => 'fas fa-times-circle', 'text' => 'Dibatalkan'],
+            'completed' => ['class' => 'bg-primary', 'icon' => 'fas fa-check-double', 'text' => 'Selesai'],
+        ];
+
+        $statusInfo = $status[$booking->status] ?? ['class' => 'bg-secondary', 'icon' => 'fas fa-info-circle', 'text' => ucfirst($booking->status)];
+
+        return view('bookings.show', compact('booking', 'statusInfo'));
     }
+
 
     /**
      * Menampilkan form edit pemesanan.
@@ -151,6 +168,7 @@ class BookingController extends Controller
             'room_id' => 'required',
             'start_date' => 'required',
             'end_date' => 'required',
+            'durasisewa' => 'required',
             'status' => 'required',
         ]);
 
@@ -206,11 +224,62 @@ class BookingController extends Controller
     }
     public function pemesanan($id)
     {
-        
+
     }
-    public function historybooking($id)
+    public function historybooking()
     {
-        
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
+        // Cari penyewa berdasarkan email user yang login
+        $penyewa = Penyewa::where('email', $user->email)->first();
+
+        if (!$penyewa) {
+            return redirect()->back()->with('error', 'Data penyewa tidak ditemukan.');
+        }
+
+        // Ambil booking berdasarkan penyewa_id
+        $bookings = Booking::where('penyewa_id', $penyewa->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        // dd($bookings);
+
+        $metode_pembayaran = Metode_Pembayaran::all();
+        return view('historybooking', compact('bookings', 'metode_pembayaran'));
     }
-    
+    // BookingController.php
+    public function getPaymentDetails(Request $request)
+    {
+        $method = $request->get('method');
+
+        // Return payment details based on method
+        $paymentDetails = [
+            'transfer' => [
+                'nama_bank' => 'Bank BCA',
+                'nomor_rekening' => '1234567890',
+                'atas_nama' => 'PT. Booking System'
+            ],
+            // Add other payment methods...
+        ];
+
+        return response()->json($paymentDetails[$method] ?? []);
+    }
+
+    public function processPayment(Request $request, Booking $booking)
+    {
+        // Validate and process payment
+        $request->validate([
+            'payment_method' => 'required|string',
+            'payment_proof' => 'nullable|file|max:5120', // 5MB max
+            'notes' => 'nullable|string'
+        ]);
+
+        // Process payment logic here...
+
+        return response()->json(['success' => true, 'message' => 'Pembayaran berhasil disubmit']);
+    }
+
 }

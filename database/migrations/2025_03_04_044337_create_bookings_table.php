@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('room_id');
             $table->date('start_date');
             $table->date('end_date');
+            $table->string('durasisewa');
             $table->string('status');
             $table->softDeletes();
             $table->unsignedBigInteger('created_by')->nullable();

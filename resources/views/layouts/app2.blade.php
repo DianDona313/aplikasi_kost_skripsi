@@ -23,17 +23,17 @@
     <link href="{{ asset('fruitables/lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
     <link href="{{ asset('fruitables/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
 
-    <!-- Customized Bootstrap Stylesheet -->
-    <link href="{{ asset('fruitables/css/bootstrap.min.css') }}" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
-    <link href="{{ asset('fruitables/css/style.css') }}" rel="stylesheet">
 
     <!-- Di <head> -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Sebelum </body> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{{ asset('fruitables/css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{{ asset('fruitables/css/style.css') }}" rel="stylesheet">
 
     <!-- HEAD -->
     {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> --}}

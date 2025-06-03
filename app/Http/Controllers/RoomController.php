@@ -105,7 +105,6 @@ class RoomController extends Controller
         $data = $request->only(['properti_id', 'room_name', 'room_deskription', 'harga', 'is_available']);
         $data['created_by'] = 1;
         $data['updated_by'] = 1;
-
         // Upload foto jika ada
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
@@ -172,18 +171,46 @@ class RoomController extends Controller
             'room_name' => 'required|string|max:255',
             'room_deskription' => 'nullable|string',
             'harga' => 'required|integer|min:0',
-            'is_available' => 'required|in:yes,no',
-            'fasilitas' => 'required|string',
+            'is_available' => 'required|in:Ya,Tidak',
+            'fasilitas' => 'required|array',
+            'fasilitas.*' => 'exists:fasilitas,id',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->all();
+        $data = $request->only([
+            'properti_id',
+            'room_name',
+            'room_deskription',
+            'harga',
+            'is_available'
+        ]);
+
         $data['updated_by'] = Auth::id();
 
+        // Upload gambar baru jika ada
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
+            if ($room->foto && \Storage::disk('public')->exists($room->foto)) {
+                \Storage::disk('public')->delete($room->foto);
+            }
+
+            // Simpan foto baru
+            $file = $request->file('foto');
+            $path = $file->store('rooms', 'public');
+            $data['foto'] = $path;
+        }
+
+        // Update data kamar
         $room->update($data);
+
+        // Update fasilitas (jika kamu menyimpannya di relasi many-to-many, misalnya)
+        // Pastikan model Room punya relasi fasilitas()
+        $room->fasilitas()->sync($request->fasilitas);
 
         return redirect()->route('rooms.index')
             ->with('success', 'Kamar berhasil diperbarui.');
     }
+
 
     /**
      * Menghapus (soft delete) kamar.

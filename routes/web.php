@@ -52,7 +52,7 @@ Route::get('login', [AuthController::class, 'index'])->name('login');
 Route::post('post-login', [AuthController::class, 'postLogin'])->name('login.post');
 Route::get('registration', [AuthController::class, 'registration'])->name('register');
 Route::post('post-registration', [AuthController::class, 'postRegistration'])->name('register.post');
-Route::get('dashboard', [AuthController::class, 'dashboard']);
+Route::get('dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
 Auth::routes();
@@ -78,6 +78,10 @@ Route::get('pemesanan', [BookingController::class, 'pemesanan'])->name('pemesana
 Route::get('historybooking', [BookingController::class, 'historybooking'])->name('historybooking');
 Route::get('/kost/{id_properti}', [PropertiController::class, 'detailKost'])->name('detailkost');
 Route::get('/send-telegram', [TelegramController::class, 'send']);
+// Route::get('/get-payment-details', [PaymentController::class, 'getDetails']);
+// routes/web.php
+Route::get('/get-payment-details', [BookingController::class, 'getPaymentDetails']);
+Route::post('/booking/{booking}/payment', [BookingController::class, 'processPayment']);
 
 Route::get('detailkamar', function () {return view('detailkamar');})->name('detailkamar');
 // Route::get('pemesanan', function () {return view('pemesanan');});
