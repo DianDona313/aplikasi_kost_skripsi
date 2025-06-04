@@ -45,8 +45,6 @@
                                             <th width="5%">No</th>
                                             <th width="20%">Properti</th>
                                             <th width="10%">Kamar</th>
-                                            {{-- <th width="12%">Check In</th>
-                                            <th width="12%">Check Out</th> --}}
                                             <th width="8%">Durasi</th>
                                             <th width="12%">Total Harga</th>
                                             <th width="10%">Status</th>
@@ -93,13 +91,13 @@
                                                                 \Carbon\Carbon::parse($booking->start_date)->diffInDays(
                                                                     \Carbon\Carbon::parse($booking->end_date),
                                                                 ) + 1;
-                                                            $total_harga = $booking->room->harga; // Asumsi Room memiliki kolom price
+                                                            $total_harga = $booking->room->harga * $durasi; // Perbaikan: kalikan dengan durasi
                                                         @endphp
                                                         <div class="d-flex flex-column">
                                                             <strong class="text-success">Rp
                                                                 {{ number_format($total_harga, 0, ',', '.') }}</strong>
                                                             <small class="text-muted">Rp
-                                                                {{ number_format($booking->room->price, 0, ',', '.') }}/hari</small>
+                                                                {{ number_format($booking->room->harga, 0, ',', '.') }}/hari</small>
                                                         </div>
                                                     @else
                                                         <span class="text-muted">N/A</span>
@@ -159,21 +157,16 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="btn-group-vertical" role="group">
-                                                        {{-- Detail Button --}}
                                                         <a href="{{ route('bookings.show', $booking->id) }}"
                                                             class="btn btn-sm btn-outline-info mb-1"
                                                             title="Lihat Detail Booking">
-                                                            <i class="fas fa-info-circle"></i> {{-- Atau ganti dengan teks "Detail" jika mau --}}
+                                                            <i class="fas fa-info-circle"></i>
                                                         </a>
-
-                                                        {{-- Payment Button - for confirmed bookings that need payment --}}
                                                         <button type="button" class="btn btn-sm btn-outline-warning mb-1"
                                                             onclick="processPayment({{ $booking->id }})"
                                                             title="Bayar Sekarang">
                                                             <i class="fas fa-credit-card"></i>
                                                         </button>
-
-                                                        {{-- Cancel Button - for pending bookings --}}
                                                         @if ($booking->status == 'pending')
                                                             <button type="button"
                                                                 class="btn btn-sm btn-outline-danger mb-1"
@@ -182,8 +175,6 @@
                                                                 <i class="fas fa-times"></i>
                                                             </button>
                                                         @endif
-
-                                                        {{-- Download Invoice Button --}}
                                                         @if (in_array($booking->status, ['confirmed', 'completed', 'active', 'paid']) &&
                                                                 (isset($booking->payment_status) && $booking->payment_status == 'paid'))
                                                             <button type="button" class="btn btn-sm btn-outline-success"
@@ -193,77 +184,8 @@
                                                             </button>
                                                         @endif
                                                     </div>
-
                                                 </td>
                                             </tr>
-
-                                            {{-- Modal Detail --}}
-                                            <div class="modal fade" id="detailModal{{ $booking->id }}" tabindex="-1"
-                                                aria-labelledby="detailModalLabel{{ $booking->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <!-- Header -->
-                                                        <div class="modal-header bg-light">
-                                                            <h5 class="modal-title"
-                                                                id="detailModalLabel{{ $booking->id }}">
-                                                                <i class="fas fa-info-circle me-2"></i>
-                                                                Detail Booking
-                                                                #{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-
-                                                        <!-- Body -->
-                                                        <div class="modal-body">
-                                                            <div class="row">
-                                                                <!-- Informasi Properti -->
-                                                                <div class="col-md-6">
-                                                                    <div class="card h-100">
-                                                                        <div class="card-header bg-success text-white">
-                                                                            <h6 class="mb-0">
-                                                                                <i
-                                                                                    class="fas fa-calendar-check me-2"></i>Informasi
-                                                                                Booking
-                                                                            </h6>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            {{-- Payment Button in Modal --}}
-                                                            @if ($booking->status == 'confirmed' && (!isset($booking->payment_status) || $booking->payment_status != 'paid'))
-                                                                <button type="button" class="btn btn-warning"
-                                                                    onclick="processPayment({{ $booking->id }})">
-                                                                    <i class="fas fa-credit-card me-1"></i> Bayar Sekarang
-                                                                </button>
-                                                            @endif
-
-                                                            {{-- Download Invoice Button in Modal --}}
-                                                            @if (in_array($booking->status, ['confirmed', 'completed', 'active', 'paid']) &&
-                                                                    (isset($booking->payment_status) && $booking->payment_status == 'paid'))
-                                                                <button type="button" class="btn btn-success"
-                                                                    onclick="downloadInvoice({{ $booking->id }})">
-                                                                    <i class="fas fa-download me-1"></i> Download Invoice
-                                                                </button>
-                                                            @endif
-
-                                                            {{-- Cancel Button in Modal --}}
-                                                            @if ($booking->status == 'pending')
-                                                                <button type="button" class="btn btn-danger"
-                                                                    onclick="confirmCancel({{ $booking->id }})">
-                                                                    <i class="fas fa-times me-1"></i> Batalkan Booking
-                                                                </button>
-                                                            @endif
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">
-                                                                <i class="fas fa-times me-1"></i> Tutup
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -290,6 +212,60 @@
                         @endif
                     </div>
                 </div>
+
+                <!-- Tabel Metode Pembayaran -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-wallet me-2"></i>Metode Pembayaran Tersedia
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if ($metode_pembayaran && $metode_pembayaran->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr class="text-center">
+                                            <th width="10%">No</th>
+                                            <th width="30%">Metode Pembayaran</th>
+                                            <th width="20%">Ikon</th>
+                                            <th width="40%">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($metode_pembayaran as $index => $metode)
+                                            <tr>
+                                                <td class="text-center">{{ $index + 1 }}</td>
+                                                <td class="text-center">{{ $metode->nama }}</td>
+                                                <td class="text-center">
+                                                    <i
+                                                        class="fas fa-{{ getIconForMethod($metode->nama) }} me-2 {{ getColorForMethod($metode->nama) }}"></i>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-sm btn-primary"
+                                                        onclick="processPaymentWithMethod({{ $booking->id ?? 0 }}, {{ $metode->id }})"
+                                                        title="Pilih Metode">
+                                                        <i class="fas fa-check me-1"></i> Pilih
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-5">
+                                <div class="mb-4">
+                                    <i class="fas fa-wallet fa-5x text-muted"></i>
+                                </div>
+                                <h4 class="text-muted mb-3">Belum Ada Metode Pembayaran</h4>
+                                <p class="text-muted mb-4">
+                                    Tidak ada metode pembayaran yang tersedia saat ini.
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -301,6 +277,7 @@
 @endsection
 
 @push('styles')
+    <!-- Styles tetap sama seperti yang Anda berikan -->
     <style>
         .btn-custom-orange {
             background-color: #FF8C00;
@@ -363,57 +340,65 @@
             border-radius: 0.5rem;
         }
 
-        /* Payment button styles */
+        .btn-outline-warning {
+            border-color: #ffc107;
+            color: #ffc107;
+            transition: all 0.3s ease;
+        }
+
         .btn-outline-warning:hover {
             background-color: #ffc107;
             border-color: #ffc107;
             color: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
         }
 
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
-            color: #000;
+        .btn-outline-warning:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        .btn-warning:hover {
-            background-color: #e0a800;
-            border-color: #d39e00;
-            color: #000;
+        .swal2-popup {
+            font-size: 0.9rem;
         }
 
-        @media (max-width: 768px) {
-            .btn-group-vertical .btn {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.875rem;
-            }
-
-            .table-responsive {
-                font-size: 0.875rem;
-            }
-
-            .modal-lg {
-                max-width: 95%;
-            }
+        .swal2-html-container {
+            max-height: 500px;
+            overflow-y: auto;
         }
 
-        .dataTables_wrapper .dataTables_length select,
-        .dataTables_wrapper .dataTables_filter input {
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        .form-control[type="file"] {
+            padding: 0.375rem 0.75rem;
             border: 1px solid #ced4da;
             border-radius: 0.375rem;
-            padding: 0.375rem 0.75rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: #007bff !important;
-            border-color: #007bff !important;
-            color: white !important;
+        .form-control[type="file"]:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
-        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background: #0056b3 !important;
-            border-color: #0056b3 !important;
-            color: white !important;
+        .swal2-loader {
+            border-color: #007bff transparent #007bff transparent;
         }
     </style>
 @endpush
@@ -432,315 +417,331 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    {{-- Perbaikan JavaScript untuk processPayment --}}
-<script>
-function processPayment(bookingId) {
-    Swal.fire({
-        title: 'Pilih Metode Pembayaran',
-        html: `
-            <div class="text-start">
-                <p class="mb-3">Pilih metode pembayaran untuk booking #${String(bookingId).padStart(4, '0')}:</p>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="transfer" value="transfer" checked>
-                    <label class="form-check-label" for="transfer">
-                        <i class="fas fa-university me-2 text-primary"></i>Transfer Bank
-                    </label>
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="ewallet" value="ewallet">
-                    <label class="form-check-label" for="ewallet">
-                        <i class="fas fa-mobile-alt me-2 text-success"></i>E-Wallet
-                    </label>
-                </div>
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="creditcard" value="creditcard">
-                    <label class="form-check-label" for="creditcard">
-                        <i class="fas fa-credit-card me-2 text-warning"></i>Kartu Kredit/Debit
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod">
-                    <label class="form-check-label" for="cod">
-                        <i class="fas fa-money-bill me-2 text-info"></i>COD (Cash on Delivery)
-                    </label>
-                </div>
-            </div>
-        `,
-        confirmButtonText: '<i class="fas fa-arrow-right me-1"></i> Lanjut',
-        cancelButtonText: '<i class="fas fa-times me-1"></i> Batal',
-        showCancelButton: true,
-        customClass: {
-            confirmButton: 'btn btn-primary',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
-        preConfirm: () => {
-            const selected = document.querySelector('input[name="paymentMethod"]:checked');
-            if (!selected) {
-                Swal.showValidationMessage('Pilih metode pembayaran terlebih dahulu');
-                return false;
-            }
-            return selected.value;
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const selectedMethod = result.value;
-            
-            // Show loading
-            Swal.fire({
-                title: 'Memuat...',
-                text: 'Mengambil informasi pembayaran',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
+    <script>
+        // Inisialisasi DataTables
+        $(document).ready(function() {
+            $('#historyBookingsTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json'
                 }
             });
+        });
 
-            // Fetch payment details
-            fetch(`/get-payment-details?method=${selectedMethod}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                showPaymentUploadDialog(bookingId, selectedMethod, data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        // Kirim data metode pembayaran ke JavaScript
+        window.paymentMethods = @json($metode_pembayaran);
+
+        // Fungsi untuk memetakan nama metode ke ikon FontAwesome
+        function getIconForMethod(methodName) {
+            const methodIcons = {
+                'Transfer Bank': 'university',
+                'E-Wallet': 'mobile-alt',
+                'Kartu Kredit/Debit': 'credit-card',
+                'COD': 'money-bill'
+            };
+            return methodIcons[methodName] || 'wallet';
+        }
+
+        // Fungsi untuk memetakan nama metode ke warna ikon
+        function getColorForMethod(methodName) {
+            const methodColors = {
+                'Transfer Bank': 'text-primary',
+                'E-Wallet': 'text-success',
+                'Kartu Kredit/Debit': 'text-warning',
+                'COD': 'text-info'
+            };
+            return methodColors[methodName] || 'text-secondary';
+        }
+
+        // Fungsi untuk memilih metode pembayaran langsung dari tabel
+        function processPaymentWithMethod(bookingId, methodId) {
+            if (!bookingId) {
                 Swal.fire({
                     title: 'Error!',
-                    text: 'Gagal mengambil informasi pembayaran. Silakan coba lagi.',
+                    text: 'ID Booking tidak valid. Silakan pilih booking terlebih dahulu.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
+                return;
+            }
+            // Langsung panggil processPayment dengan bookingId
+            processPayment(bookingId, methodId);
+        }
+
+        // Modifikasi processPayment untuk menerima methodId opsional
+        function processPayment(bookingId, preSelectedMethodId = null) {
+            const paymentOptions = paymentMethods.map((method, index) => `
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="method${method.id}" value="${method.id}" ${preSelectedMethodId == method.id || (!preSelectedMethodId && index === 0) ? 'checked' : ''}>
+        <label class="form-check-label" for="method${method.id}">
+            <i class="fas fa-${getIconForMethod(method.nama_bank)} me-2 ${getColorForMethod(method.nama_bank)}"></i>${method.nama_bank || 'Metode Tidak Diketahui'}
+        </label>
+    </div>
+`).join('');
+
+            Swal.fire({
+                title: 'Pilih Metode Pembayaran',
+                html: `
+                    <div class="text-start">
+                        <p class="mb-3">Pilih metode pembayaran untuk booking #${String(bookingId).padStart(4, '0')}:</p>
+                        ${paymentOptions}
+                    </div>
+                `,
+                confirmButtonText: '<i class="fas fa-arrow-right me-1"></i> Lanjut',
+                cancelButtonText: '<i class="fas fa-times me-1"></i> Batal',
+                showCancelButton: true,
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false,
+                preConfirm: () => {
+                    const selected = document.querySelector('input[name="paymentMethod"]:checked');
+                    if (!selected) {
+                        Swal.showValidationMessage('Pilih metode pembayaran terlebih dahulu');
+                        return false;
+                    }
+                    return selected.value;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const selectedMethod = result.value;
+
+                    Swal.fire({
+                        title: 'Memuat...',
+                        text: 'Mengambil informasi pembayaran',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/get-payment-details?method=${selectedMethod}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            showPaymentUploadDialog(bookingId, selectedMethod, data);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Gagal mengambil informasi pembayaran. Silakan coba lagi.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                }
             });
         }
-    });
-}
 
-function showPaymentUploadDialog(bookingId, method, paymentInfo) {
-    const methodNames = {
-        'transfer': 'Transfer Bank',
-        'ewallet': 'E-Wallet',
-        'creditcard': 'Kartu Kredit/Debit',
-        'cod': 'COD (Cash on Delivery)'
-    };
+        // Fungsi showPaymentUploadDialog (tetap sama seperti yang Anda berikan)
+        function showPaymentUploadDialog(bookingId, method, paymentInfo) {
+            console.log(paymentInfo);
 
-    const isCOD = method === 'cod';
-    
-    Swal.fire({
-        title: 'Konfirmasi Pembayaran',
-        html: `
-            <div class="text-start">
-                <div class="mb-3">
-                    <strong>Metode Pembayaran:</strong> ${methodNames[method] || method}
-                </div>
-                
-                ${!isCOD ? `
-                    <div class="mb-3">
-                        <strong>Detail Pembayaran:</strong><br>
-                        <div class="p-3 bg-light rounded">
-                            <div><strong>Bank:</strong> ${paymentInfo.nama_bank || 'N/A'}</div>
-                            <div><strong>No. Rekening:</strong> ${paymentInfo.nomor_rekening || 'N/A'}</div>
-                            <div><strong>Atas Nama:</strong> ${paymentInfo.atas_nama || 'N/A'}</div>
+            const methodNames = {
+                'transfer': 'Transfer Bank',
+                'ewallet': 'E-Wallet',
+                'creditcard': 'Kartu Kredit/Debit',
+                'cod': 'COD (Cash on Delivery)'
+            };
+
+            const isCOD = method === 'cod';
+
+            Swal.fire({
+                title: 'Konfirmasi Pembayaran',
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <strong>Metode Pembayaran:</strong> ${methodNames[method] || method}
+                        </div>
+                        ${!isCOD ? `
+                                    <div class="mb-3">
+                                        <strong>Detail Pembayaran:</strong><br>
+                                        <div class="p-3 bg-light rounded">
+                                            <div><strong>Bank:</strong> ${paymentInfo.nama_bank || 'N/A'}</div>
+                                            <div><strong>No. Rekening:</strong> ${paymentInfo.nomor_rekening || 'N/A'}</div>
+                                            <div><strong>Atas Nama:</strong> ${paymentInfo.atas_nama || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="paymentProof" class="form-label">
+                                            <i class="fas fa-upload me-1"></i>Upload Bukti Pembayaran *
+                                        </label>
+                                        <input type="file" class="form-control" id="paymentProof" 
+                                               accept="image/*,application/pdf" required>
+                                        <small class="form-text text-muted">Format: JPG, PNG, PDF (Max: 5MB)</small>
+                                    </div>
+                                ` : `
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Pembayaran akan dilakukan saat check-in
+                                    </div>
+                                `}
+                        <div class="mb-3">
+                            <label for="paymentNotes" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Catatan (Opsional)
+                            </label>
+                            <textarea class="form-control" id="paymentNotes" rows="3" 
+                                      placeholder="Tambahkan catatan jika diperlukan..."></textarea>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="paymentProof" class="form-label">
-                            <i class="fas fa-upload me-1"></i>Upload Bukti Pembayaran *
-                        </label>
-                        <input type="file" class="form-control" id="paymentProof" 
-                               accept="image/*,application/pdf" required>
-                        <small class="form-text text-muted">Format: JPG, PNG, PDF (Max: 5MB)</small>
-                    </div>
-                ` : `
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Pembayaran akan dilakukan saat check-in
-                    </div>
-                `}
-                
-                <div class="mb-3">
-                    <label for="paymentNotes" class="form-label">
-                        <i class="fas fa-sticky-note me-1"></i>Catatan (Opsional)
-                    </label>
-                    <textarea class="form-control" id="paymentNotes" rows="3" 
-                              placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-                </div>
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: `<i class="fas fa-paper-plane me-1"></i> ${isCOD ? 'Konfirmasi' : 'Kirim Pembayaran'}`,
-        cancelButtonText: '<i class="fas fa-times me-1"></i> Batal',
-        customClass: {
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
-        preConfirm: () => {
-            const fileInput = document.getElementById('paymentProof');
-            const notes = document.getElementById('paymentNotes').value;
+                `,
+                showCancelButton: true,
+                confirmButtonText: `<i class="fas fa-paper-plane me-1"></i> ${isCOD ? 'Konfirmasi' : 'Kirim Pembayaran'}`,
+                cancelButtonText: '<i class="fas fa-times me-1"></i> Batal',
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false,
+                preConfirm: () => {
+                    const fileInput = document.getElementById('paymentProof');
+                    const notes = document.getElementById('paymentNotes').value;
 
-            // Validasi file untuk non-COD
-            if (!isCOD && fileInput.files.length === 0) {
-                Swal.showValidationMessage('Upload bukti pembayaran diperlukan untuk metode ini');
-                return false;
-            }
+                    if (!isCOD && fileInput.files.length === 0) {
+                        Swal.showValidationMessage('Upload bukti pembayaran diperlukan untuk metode ini');
+                        return false;
+                    }
 
-            // Validasi ukuran file
-            if (!isCOD && fileInput.files[0] && fileInput.files[0].size > 5 * 1024 * 1024) {
-                Swal.showValidationMessage('Ukuran file maksimal 5MB');
-                return false;
-            }
+                    if (!isCOD && fileInput.files[0] && fileInput.files[0].size > 5 * 1024 * 1024) {
+                        Swal.showValidationMessage('Ukuran file maksimal 5MB');
+                        return false;
+                    }
 
-            return {
-                files: fileInput.files,
-                notes: notes
-            };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading
-            Swal.fire({
-                title: 'Memproses...',
-                text: 'Mengirim data pembayaran',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                didOpen: () => {
-                    Swal.showLoading();
+                    return {
+                        files: fileInput.files,
+                        notes: notes
+                    };
                 }
-            });
-
-            // Prepare form data
-            const formData = new FormData();
-            formData.append('booking_id', bookingId);
-            formData.append('payment_method', method);
-            formData.append('notes', result.value.notes || '');
-            
-            // Add file if exists
-            if (result.value.files && result.value.files.length > 0) {
-                formData.append('payment_proof', result.value.files[0]);
-            }
-
-            // Send to server
-            fetch(`/booking/${bookingId}/payment`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
+            }).then((result) => {
+                if (result.isConfirmed) {
                     Swal.fire({
-                        title: 'Berhasil!',
-                        text: data.message || 'Pembayaran Anda telah berhasil disubmit dan sedang diproses.',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.reload();
+                        title: 'Memproses...',
+                        text: 'Mengirim data pembayaran',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
-                } else {
-                    throw new Error(data.message || 'Terjadi kesalahan');
+
+                    const formData = new FormData();
+                    formData.append('booking_id', bookingId);
+                    formData.append('payment_method', method);
+                    formData.append('notes', result.value.notes || '');
+
+                    if (result.value.files && result.value.files.length > 0) {
+                        formData.append('payment_proof', result.value.files[0]);
+                    }
+
+                    fetch(`/booking/${bookingId}/payment`, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                    'content')
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: data.message ||
+                                        'Pembayaran Anda telah berhasil disubmit dan sedang diproses.',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message || 'Terjadi kesalahan');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Gagal!',
+                                text: error.message || 'Terjadi kesalahan saat memproses pembayaran',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        });
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Gagal!',
-                    text: error.message || 'Terjadi kesalahan saat memproses pembayaran',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
             });
         }
-    });
-}
-</script>
 
-{{-- Perbaikan CSS untuk tombol payment --}}
-<style>
-/* Payment button improvements */
-.btn-outline-warning {
-    border-color: #ffc107;
-    color: #ffc107;
-    transition: all 0.3s ease;
-}
+        // Fungsi untuk membatalkan booking
+        function confirmCancel(bookingId) {
+            Swal.fire({
+                title: 'Konfirmasi Pembatalan',
+                text: 'Apakah Anda yakin ingin membatalkan booking ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-check me-1"></i> Ya, Batalkan',
+                cancelButtonText: '<i class="fas fa-times me-1"></i> Tidak',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('cancelForm');
+                    form.action = `/booking/${bookingId}/cancel`;
+                    form.submit();
+                }
+            });
+        }
 
-.btn-outline-warning:hover {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #000;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
-}
-
-.btn-outline-warning:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* SweetAlert2 custom styles */
-.swal2-popup {
-    font-size: 0.9rem;
-}
-
-.swal2-html-container {
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-.form-check-input:checked {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-.form-check-label {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
-
-.alert-info {
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-    color: #0c5460;
-}
-
-/* File input styling */
-.form-control[type="file"] {
-    padding: 0.375rem 0.75rem;
-    border: 1px solid #ced4da;
-    border-radius: 0.375rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-control[type="file"]:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-/* Loading animation */
-.swal2-loader {
-    border-color: #007bff transparent #007bff transparent;
-}
-</style>
+        // Fungsi untuk download invoice
+        function downloadInvoice(bookingId) {
+            window.location.href = `/booking/${bookingId}/invoice`;
+        }
+    </script>
 @endpush
+
+@php
+    function getIconForMethod($methodName)
+    {
+        $methodIcons = [
+            'Transfer Bank' => 'university',
+            'E-Wallet' => 'mobile-alt',
+            'Kartu Kredit/Debit' => 'credit-card',
+            'COD' => 'money-bill',
+        ];
+        return $methodIcons[$methodName] ?? 'wallet';
+    }
+
+    function getColorForMethod($methodName)
+    {
+        $methodColors = [
+            'Transfer Bank' => 'text-primary',
+            'E-Wallet' => 'text-success',
+            'Kartu Kredit/Debit' => 'text-warning',
+            'COD' => 'text-info',
+        ];
+        return $methodColors[$methodName] ?? 'text-secondary';
+    }
+@endphp

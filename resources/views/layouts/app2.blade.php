@@ -73,7 +73,7 @@
                         <a href="{{ route('landing') }}" class="nav-item nav-link active">Home</a>
                         <a href="{{ route('daftarkost') }}" class="nav-item nav-link">Kost</a>
                         <a href="{{ route('daftarkamar') }}" class="nav-item nav-link">Kamar</a>
-                        <div class="nav-item dropdown">
+                        {{-- <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
                                 <a href="cart.html" class="dropdown-item">Cart</a>
@@ -82,13 +82,13 @@
                                 <a href="404.html" class="dropdown-item">404 Page</a>
                             </div>
                         </div>
-                        <a href="contact.html" class="nav-item nav-link">Contact</a>
+                        <a href="contact.html" class="nav-item nav-link">Contact</a> --}}
                     </div>
                     <div class="d-flex m-3 me-0">
-                        <button
+                        {{-- <button
                             class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4"
                             data-bs-toggle="modal" data-bs-target="#searchModal"><i
-                                class="fas fa-search text-primary"></i></button>
+                                class="fas fa-search text-primary"></i></button> --}}
                         <a href="{{ route('chat_bot') }}" class="position-relative me-4 my-auto">
                             <i class="fa fa-comments fa-2x"></i>
                             <span
@@ -158,12 +158,12 @@
                     </div>
                     <div class="col-lg-3">
                         <div class="d-flex justify-content-end pt-3">
-                            <a class="btn  btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i
+                            {{-- <a class="btn  btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i
                                     class="fab fa-twitter"></i></a>
                             <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i
                                     class="fab fa-facebook-f"></i></a>
                             <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i
-                                    class="fab fa-youtube"></i></a>
+                                    class="fab fa-youtube"></i></a> --}}
                             <a class="btn btn-outline-secondary btn-md-square rounded-circle" href=""><i
                                     class="fab fa-linkedin-in"></i></a>
                         </div>

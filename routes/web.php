@@ -82,6 +82,7 @@ Route::get('/send-telegram', [TelegramController::class, 'send']);
 // routes/web.php
 Route::get('/get-payment-details', [BookingController::class, 'getPaymentDetails']);
 Route::post('/booking/{booking}/payment', [BookingController::class, 'processPayment']);
+Route::get('/properties/data', [PropertiController::class, 'getData'])->name('properties.data');
 
 Route::get('detailkamar', function () {return view('detailkamar');})->name('detailkamar');
 // Route::get('pemesanan', function () {return view('pemesanan');});

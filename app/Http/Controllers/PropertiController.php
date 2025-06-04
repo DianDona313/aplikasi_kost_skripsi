@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JenisKost;
 use App\Models\Peraturans;
 use App\Models\Properties;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use PhpParser\Builder\Property;
 use Str;
@@ -21,28 +22,29 @@ class PropertiController extends Controller
         $this->middleware('permission:properti-delete', ['only' => ['destroy']]);
     }
     public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Properties::latest()->get();
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-                    $btn = '<a href="' . url('/properties/' . urlencode($row->id)) . '" class="btn btn-info btn-sm">Detail</a>';
-                    $btn .= ' <a href="' . route('properties.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a>';
-                    $btn .= ' <form action="' . route('properties.destroy', $row->id) . '" method="POST" style="display:inline;">
+{
+    if ($request->ajax()) {
+        $userId = Auth::id(); // Ambil ID user yang sedang login
+
+        $data = Properties::where('created_by', $userId)->latest()->get();
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('action', function ($row) {
+                $btn = '<a href="' . url('/properties/' . urlencode($row->id)) . '" class="btn btn-info btn-sm">Detail</a>';
+                $btn .= ' <a href="' . route('properties.edit', $row->id) . '" class="edit btn btn-primary btn-sm">Edit</a>';
+                $btn .= ' <form action="' . route('properties.destroy', $row->id) . '" method="POST" style="display:inline;">
                     ' . csrf_field() . method_field("DELETE") . '
                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                  </form>';
-                    return $btn;
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-
-        }
-
-        return view('properties.index');
+                </form>';
+                return $btn;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
 
+    return view('properties.index');
+}
     /**
      * Show the form for creating a new resource.
      */
@@ -191,7 +193,7 @@ class PropertiController extends Controller
 
         $rooms = $properti->rooms;
 
-        return view('detailkost', compact('properti','rooms'));
+        return view('detailkost', compact('properti', 'rooms'));
     }
 
 

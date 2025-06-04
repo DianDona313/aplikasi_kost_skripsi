@@ -7,13 +7,13 @@
                 <div class="col-md-12 col-lg-7">
                     <h4 class="mb-3 text-secondary">Kos Gak Pake Drama</h4>
                     <h1 class="mb-5 display-5 text-primary">Temukan Kost Nyaman & Terjangkau Sekali Klik</h1>
-                    <div class="position-relative mx-auto">
+                    {{-- <div class="position-relative mx-auto">
                         <input class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill" type="number"
                             placeholder="Search">
                         <button type="submit"
                             class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100"
                             style="top: 0; right: 25%;">Cari Sekarang</button>
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="col-md-12 col-lg-5">
                     <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
@@ -54,54 +54,57 @@
 
     <!-- Featurs Section Start -->
     <div class="container-fluid featurs py-5">
-        <div class="container py-5">
+        <<div class="container py-5">
             <div class="row g-4">
                 <div class="col-md-6 col-lg-3">
                     <div class="featurs-item text-center rounded bg-light p-4">
                         <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                            <i class="fas fa-car-side fa-3x text-white"></i>
+                            <i class="fas fa-door-open fa-3x text-white"></i>
                         </div>
                         <div class="featurs-content text-center">
-                            <h5>Free Shipping</h5>
-                            <p class="mb-0">Free on order over $300</p>
+                            <h5>Kamar Tersedia</h5>
+                            <p class="mb-0">Lihat dan booking kamar kost yang tersedia</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="featurs-item text-center rounded bg-light p-4">
                         <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                            <i class="fas fa-user-shield fa-3x text-white"></i>
+                            <i class="fas fa-money-bill-wave fa-3x text-white"></i>
                         </div>
                         <div class="featurs-content text-center">
-                            <h5>Security Payment</h5>
-                            <p class="mb-0">100% security payment</p>
+                            <h5>Pembayaran Mudah</h5>
+                            <p class="mb-0">Bayar sewa kost online tanpa ribet</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="featurs-item text-center rounded bg-light p-4">
                         <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                            <i class="fas fa-exchange-alt fa-3x text-white"></i>
+                            <i class="fas fa-comments fa-3x text-white"></i>
                         </div>
                         <div class="featurs-content text-center">
-                            <h5>30 Day Return</h5>
-                            <p class="mb-0">30 day money guarantee</p>
+                            <h5>Chatbot Bantuan</h5>
+                            <p class="mb-0">Tanya jawab cepat lewat asisten virtual</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="featurs-item text-center rounded bg-light p-4">
                         <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                            <i class="fa fa-phone-alt fa-3x text-white"></i>
+                            <i class="fas fa-user-check fa-3x text-white"></i>
                         </div>
                         <div class="featurs-content text-center">
-                            <h5>24/7 Support</h5>
-                            <p class="mb-0">Support every time fast</p>
+                            <h5>Manajemen Penyewa</h5>
+                            <p class="mb-0">Pantau dan kelola data penyewa dengan mudah</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+    </div>
+
+    </div>
+
     </div>
     <!-- Featurs Section End -->
 
@@ -414,79 +417,79 @@
 
     <!-- Modal Section - Dipindahkan ke luar loop dan diberi struktur yang benar -->
     @foreach ($rooms as $room)
-    <div class="modal fade" id="pesanModal{{ $room->id }}" tabindex="-1"
-        aria-labelledby="pesanModalLabel{{ $room->id }}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form action="{{ route('bookings.store') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="room_id" value="{{ $room->id ?? '' }}">
-                    <input type="hidden" name="property_id" value="{{ $room->properti_id ?? '' }}">
-                    <input type="hidden" name="penyewa_id" value="{{ auth()->user()->id ?? '' }}">
+        <div class="modal fade" id="pesanModal{{ $room->id }}" tabindex="-1"
+            aria-labelledby="pesanModalLabel{{ $room->id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('bookings.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="room_id" value="{{ $room->id ?? '' }}">
+                        <input type="hidden" name="property_id" value="{{ $room->properti_id ?? '' }}">
+                        <input type="hidden" name="penyewa_id" value="{{ auth()->user()->id ?? '' }}">
 
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="pesanModalLabel{{ $room->id }}">Form Pemesanan -
-                            {{ $room->room_name }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="duration_{{ $room->id }}" class="form-label">Durasi Sewa</label>
-                            <select class="form-select" id="duration_{{ $room->id }}">
-                                <option value="" selected disabled>Pilih Durasi</option>
-                                <option value="12">1 Tahun</option>
-                                <option value="6">6 Bulan</option>
-                                <option value="3">3 Bulan</option>
-                                <option value="1">1 Bulan</option>
-                            </select>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="pesanModalLabel{{ $room->id }}">Form Pemesanan -
+                                {{ $room->room_name }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="start_date_{{ $room->id }}" class="form-label">Tanggal Mulai</label>
-                            <input type="date" name="start_date" id="start_date_{{ $room->id }}"
-                                class="form-control" required>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="duration_{{ $room->id }}" class="form-label">Durasi Sewa</label>
+                                <select class="form-select" id="duration_{{ $room->id }}">
+                                    <option value="" selected disabled>Pilih Durasi</option>
+                                    <option value="12">1 Tahun</option>
+                                    <option value="6">6 Bulan</option>
+                                    <option value="3">3 Bulan</option>
+                                    <option value="1">1 Bulan</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="start_date_{{ $room->id }}" class="form-label">Tanggal Mulai</label>
+                                <input type="date" name="start_date" id="start_date_{{ $room->id }}"
+                                    class="form-control" required>
+                            </div>
+
+                            <!-- Disembunyikan -->
+                            <input type="hidden" name="end_date" id="end_date_{{ $room->id }}">
                         </div>
 
-                        <!-- Disembunyikan -->
-                        <input type="hidden" name="end_date" id="end_date_{{ $room->id }}">
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button type="submit" class="btn btn-primary">Pesan Sekarang</button>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            <button type="submit" class="btn btn-primary">Pesan Sekarang</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const durationSelect = document.getElementById('duration_{{ $room->id }}');
-            const startDateInput = document.getElementById('start_date_{{ $room->id }}');
-            const endDateInput = document.getElementById('end_date_{{ $room->id }}');
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const durationSelect = document.getElementById('duration_{{ $room->id }}');
+                const startDateInput = document.getElementById('start_date_{{ $room->id }}');
+                const endDateInput = document.getElementById('end_date_{{ $room->id }}');
 
-            function updateEndDate() {
-                const duration = parseInt(durationSelect.value);
-                const startDate = new Date(startDateInput.value);
-                if (!isNaN(duration) && startDateInput.value) {
-                    // Tambahkan durasi dalam bulan ke tanggal mulai
-                    const endDate = new Date(startDate);
-                    endDate.setMonth(endDate.getMonth() + duration);
-                    // Set nilai ke input tanggal selesai
-                    endDateInput.value = endDate.toISOString().split('T')[0];
-                } else {
-                    endDateInput.value = '';
+                function updateEndDate() {
+                    const duration = parseInt(durationSelect.value);
+                    const startDate = new Date(startDateInput.value);
+                    if (!isNaN(duration) && startDateInput.value) {
+                        // Tambahkan durasi dalam bulan ke tanggal mulai
+                        const endDate = new Date(startDate);
+                        endDate.setMonth(endDate.getMonth() + duration);
+                        // Set nilai ke input tanggal selesai
+                        endDateInput.value = endDate.toISOString().split('T')[0];
+                    } else {
+                        endDateInput.value = '';
+                    }
                 }
-            }
 
-            durationSelect.addEventListener('change', updateEndDate);
-            startDateInput.addEventListener('change', updateEndDate);
-        });
-    </script>
-@endforeach
+                durationSelect.addEventListener('change', updateEndDate);
+                startDateInput.addEventListener('change', updateEndDate);
+            });
+        </script>
+    @endforeach
 
 
 
@@ -496,12 +499,12 @@
             <div class="row g-4 align-items-center">
                 <div class="col-lg-6">
                     <div class="py-4">
-                        <h1 class="display-3 text-white">Fresh Exotic Fruits</h1>
-                        <p class="fw-normal display-3 text-dark mb-4">in Our Store</p>
-                        <p class="mb-4 text-dark">The generated Lorem Ipsum is therefore always free from repetition
-                            injected humour, or non-characteristic words etc.</p>
-                        <a href="#"
-                            class="banner-btn btn border-2 border-white rounded-pill text-dark py-3 px-5">BUY</a>
+                        <h1 class="display-3 text-white">Temukan Kost Idaman</h1>
+                        <p class="fw-normal display-3 text-dark mb-4">Nyaman & Strategis</p>
+                        <p class="mb-4 text-dark">Cari kost dengan fasilitas lengkap, lokasi strategis, dan harga
+                            terjangkau hanya di aplikasi kami.</p>
+                        <a href="{{ route('daftarkost') }}"
+                            class="banner-btn btn border-2 border-white rounded-pill text-dark py-3 px-5">Lihat Kost</a>
                     </div>
                 </div>
                 <div class="col-lg-6">
